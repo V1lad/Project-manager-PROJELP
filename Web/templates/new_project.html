@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Новый проект{% endblock %}
+{% block content %}
+
+<div class="container" id='new-project'>
+<div class="row pt-4 mt-4 mb-4">
+<div class="col-3">
+</div>
+<div class="col-5">
+    <form method="POST">
+        <h3 align="center">Создание нового проекта</h3>
+        <div class="form-group">
+            <label for = "name">Название проекта</label>
+            <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                placeholder="Введите название проекта"
+                />
+            </br>
+            <label for = "shortDescription">Краткое описание проекта</label>
+            <input
+                type="text"
+                class="form-control"
+                id="shortDescription"
+                name="shortDescription"
+                placeholder="Введите краткое описание проекта"
+                />
+        </div>
+        <br />
+        <button type="submit" class="btn btn-primary">Создать</button>
+    </form>
+</div>
+
+{% endblock %}

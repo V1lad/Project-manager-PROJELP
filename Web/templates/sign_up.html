@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация{% endblock %}
+{% block content %}
+
+<div class="container" id='sign-up-container'>
+<div class="row pt-4 mt-4 mb-4">
+    <div class="col-4">
+    </div>
+    <div class="col-4">
+        <form method="POST">
+            <h3 align="center">Регистрация</h3>
+            <div class="form-group">
+                <label for = "email">Почтовый адрес</label>
+                <input
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    name="email"
+                    placeholder="Введите почтовый адрес"
+                    />
+                </br>
+                <label for = "firstName">Имя</label>
+                <input
+                    type="firstName"
+                    class="form-control"
+                    id="firstName"
+                    name="firstName"
+                    placeholder="Введите имя"
+                    />
+                </br>
+                <label for = "password1">Пароль</label>
+                <input
+                    type="password"
+                    class="form-control"
+                    id="password1"
+                    name="password1"
+                    placeholder="Введите пароль с длиной более 6 символов"
+                    />
+                </br>
+                <label for = "password2">Подтверждение пароля</label>
+                <input
+                    type="password"
+                    class="form-control"
+                    id="password2"
+                    name="password2"
+                    placeholder="Повторно введите пароль"
+                    />
+                <button type="submit" class="btn btn-primary mt-3">Создать</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

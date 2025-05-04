@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Проект{% endblock %}
+{% block content %}
+
+<ul class="list-group mt-5">
+    {% for note in subproject.notes %}
+    <li class="list-group-item">
+        <form method="POST">
+            <div class="form-group">
+                <div {% if note.done == "True" %}style="text-decoration:line-through"{% endif %}><textarea
+                    type="text"
+                    class="form-control border-0"
+                    id="content"
+                    name="content"
+                    >{{ note.content }}</textarea>
+            </div>
+            <input type="hidden" name="content_id" value="{{ note.id }}" />
+            <button type="submit" class="btn btn-outline-dark btn-sm mt-1">Сохранить</button>
+            </div>
+        </form>
+        <div class="btn-group" role="group" aria-label="Basic example">
+            <form method="POST" class = "mr-1">
+                <div class="form-group">
+                    <input type="hidden" name="complete" value="{{ note.id }}" />
+                    <button type="submit" class="btn btn-outline-dark btn-sm">Выполнить</button>
+                </div>
+            </form>
+            <form method="POST" >
+                <div class="form-group">
+                    <input type="hidden" name="delete" value="{{ note.id }}" />
+                    <button type="submit" class="btn btn-outline-dark btn-sm">Удалить</button>
+                </div>
+            </form>
+        </div>
+    </li>
+    {% endfor %}
+    <li class="list-group-item">
+        <form action = {{ url_for('.showSubProject', index=project.id, subproject=subproject.id) }} method = "POST">
+        <input type="text" class="form-control mb-3 border-0" name="create_note" placeholder="Содержание записи" />
+        <button type="submit" class="btn btn-primary btn-sm">Создать запись</button>
+        <br/>
+        </form>
+    </li>
+</ul>
+<form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
+<input type="hidden" name="project" value="{{ project.id }}" />
+<button type="submit" class="btn btn-primary mt-3">Вернутся к проекту</button>
+<br/>
+</form>
+
+{% endblock %}

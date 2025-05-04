@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Проект{% endblock %}
+{% block content %}
+
+<h3> Название проекта:  </h3>
+<span>{{ project.name }} </span> </br> </br>
+<h3> Краткое описание проекта:  </h3>
+<span>{{ project.shortDescription }} </span> </br> </br>
+<h3> Описание проекта:  </h3>
+<span>{{ project.fullDescription }}  </span> </br> </br>
+<h3> Цель проекта:  </h3>
+<span>{{ project.goal }}   </span> </br> </br>
+<form action = {{ url_for('.redactProject', index=project.id) }} method = "POST" class="mb-5">
+<input type="hidden" name="project" value="{{ project.id }}" />
+<button type="submit" class="btn btn-primary">Редактировать информацию о проекте</button>
+<br/>
+</form>
+<h2> Содержание: </h2>
+<ul class="list-group">
+{% for subproject in subprojects %}
+<div class="list-group-item">
+    <h3><span {% if subproject.done == "True" %} style="text-decoration:line-through" {% endif %}> {{subproject.name}}</span>{% if subproject.done == "True" %} - Выполнен{% endif %}</h3>
+    <p>{{subproject.shortDescription}}</p>
+    <form action = {{ url_for('.showSubProject', index=project.id, subproject=subproject.id) }} method = "POST">
+    <input type="hidden" name="to_redact_subproject_id" value="{{ subproject.id }}" />
+    <button type="submit" class="btn btn-primary btn-sm mb-3">Открыть</button>
+    </form>
+    <form action = {{ url_for('.redactSubProject', index=project.id, subproject=subproject.id) }} method = "POST">
+    <input type="hidden" name="to_redact_subproject_id" value="{{ subproject.id }}" />
+    <button type="submit" class="btn btn-primary btn-sm">Редактировать</button>
+    <br/>
+    </form>
+</div>
+{% endfor %}
+<li class="list-group-item">
+    <form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
+    <input type="text" class="form-control mb-3" name="to_create_subproject_name" placeholder="Название раздела" />
+    <button type="submit" class="btn btn-primary btn-sm">Создать раздел</button>
+    <br/>
+    </form>
+</li>
+<ul>
+    
+{% endblock %}

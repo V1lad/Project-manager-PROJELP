@@ -1,2 +1,2 @@
-# Project manager PROJELP
-
+# Student Project Manager
+ A course project for  university

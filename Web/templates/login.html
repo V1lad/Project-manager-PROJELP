@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Вход{% endblock %}
+{% block content %}
+
+<div class="container" id='log-in-container'>
+<div class="row pt-4 mt-4 mb-4">
+<div class="col-4">
+</div>
+<div class="col-4">
+    <h3 align="center">Вход в аккаунт</h3>
+    <form method="POST">
+    <div class="form-group">
+        <label for = "email">Почтовый адрес</label>
+        <input
+            type="email"
+            class="form-control"
+            id="email"
+            name="email"
+            placeholder="Введите почтовый адрес"
+            />
+        </br>
+        <label for = "password">Пароль</label>
+        <input
+            type="password"
+            class="form-control"
+            id="password"
+            name="password"
+            placeholder="Введите пароль"
+            />
+        <button type="submit" class="btn btn-primary mt-3">Войти</button>
+    </div>
+</div>
+
+{% endblock %}

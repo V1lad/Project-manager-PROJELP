@@ -1,0 +1,3 @@
+*.db
+web/__pycache__
+*.txt
