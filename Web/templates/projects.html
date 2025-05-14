@@ -3,19 +3,21 @@
 {% block title %}Доступные проекты{% endblock %}
 {% block content %}
 
-<h1 align="center"> Ваши проекты  </h1>
+<div class="mt-5 content-container">
+<h1 align="center" class="colorw"> Ваши проекты  </h1>
 {% for project in available_projects %}
 <ul class="list-group">
-    <li class="list-group-item">
+    <li class="list-group-item colored_text message-bubble">
         <h1><span {% if project.done == "True" %} style="text-decoration:line-through" {% endif %}>{{ project.name }}</span>{% if project.done == "True" %} - Выполнен{% endif %} </h1>
         {{ project.shortDescription}} </br>
         <form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
         <input type="hidden" name="project" value="{{ project.id }}" />
-        <button  type="submit" class="btn btn-primary">Открыть</button>
+        <button  type="submit" class="btn btn-info">Открыть</button>
         <br/>
         </form>
     </li>
 </ul>
-{% endfor %}
 
+{% endfor %}
+</div>
 {% endblock %}

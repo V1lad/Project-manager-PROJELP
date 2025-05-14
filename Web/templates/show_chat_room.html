@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Проект{% endblock %}
+{% block content %}
+<div class="container mb-2">
+<ul class="list-group mt-5  content-container">
+    {% for message in chat_room.messages %}
+        <li class="list-group-item message-bubble {% if message.author_id == current_user.id %}my-message{% else %}other-message{% endif %}">
+        <div class="message-header">
+            <span class="message-author {% if message.author_id == current_user.id %}text-primary{% else %}text-secondary{% endif %}">
+                {{ message.author_name}}
+            </span>
+            <span class="message-time text-muted">
+                {{ message.created_at }}
+            </span>
+        </div>
+        <form method="POST">
+            <div class="form-group message-content">
+                {{ message.text }}
+            </div>
+        </form>
+       
+    </li>
+    {% endfor %}
+    <li class="list-group-item message-bubble">
+        <form action = {{ url_for('.accessProjectChat', index=project.id) }} method = "POST">
+        <input type="text" class="form-control mb-3 border-0" name="create_message" placeholder="Введите сообщение" />
+        <button type="submit" class="btn btn-info btn-sm">Отправить сообщение</button>
+        <br/>
+        </form>
+    </li>
+</ul>
+<form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
+<input type="hidden" name="project" value="{{ project.id }}" />
+<button type="submit" class="btn btn-info mt-3">Вернуться к проекту</button>
+<br/>
+</form>
+</div>
+
+{% endblock %}

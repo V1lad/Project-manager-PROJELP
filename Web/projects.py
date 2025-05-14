@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from . import db
 from flask_login import login_required, current_user
-from .models import Project, User, SubProject, Note
-from .functions import has_access_to_project
+from .models import Project, User, SubProject, Note, ChatRoom, Message
+from .functions import has_access_to_project, get_date, decode
+from datetime import datetime
 import json
 
 DB_MAX_INT = 10000000000000000
@@ -51,14 +52,21 @@ def redactProject(index):
         db.session.commit()
         return redirect(url_for('projects.allProjects'))
     
+   # if name:
+   #     project.name = name
+   # elif fullDescription:
+   #     project.fullDescription = fullDescription
+   # elif shortDescription:
+   #     project.shortDescription = shortDescription
+   # elif goal:
+    #    project.goal = goal
+    
     if name:
         project.name = name
-    elif fullDescription:
         project.fullDescription = fullDescription
-    elif shortDescription:
         project.shortDescription = shortDescription
-    elif goal:
         project.goal = goal
+        
     elif to_delete_user_id:
         allowed_users_list.remove(to_delete_user_id)
         project.allowedUsers = json.dumps(allowed_users_list)
@@ -109,8 +117,12 @@ def newProject():
         shortDescription = request.form.get('shortDescription')
 
         new_project = Project(name=name, shortDescription=shortDescription, owner_id=current_user.id)
-        
         db.session.add(new_project)
+        db.session.commit()
+        new_chat_room = ChatRoom(parent_id=new_project.id)
+        db.session.add(new_chat_room)
+        db.session.commit()
+        new_project.chatRoom = new_chat_room.id
         db.session.commit()
         
         return redirect(url_for('projects.allProjects'))
@@ -163,7 +175,6 @@ def redactSubProject(index, subproject):
         
         if name:
             subproject.name = name
-        elif description:
             subproject.shortDescription = description
 
         if is_subproject_done_id:
@@ -189,6 +200,7 @@ def showSubProject(index, subproject):
         content_id = request.form.get('content_id')
         delete = request.form.get('delete')
         complete = request.form.get('complete')
+        show_chat = request.form.get('complete')
         
         
         subproject = SubProject.query.filter_by(id=subproject).first()
@@ -213,6 +225,19 @@ def showSubProject(index, subproject):
         elif content_id:
             note = Note.query.filter_by(id=int(content_id)).first()
             note.content = content
+        
+        elif show_chat:
+            note = Note.query.filter_by(id=int(delete)).first()
+            if not note.chatRoom:
+                new_chat_room = ChatRoom(parent_id=note.id)
+                db.session.add(new_chat_room)
+                db.session.commit()
+                note.chatRoom = new_chat_room.id
+                db.session.commit()
+            else:
+                chat_room = ChatRoom.query.filter_by(id=project.chatRoom).first()
+            
+            return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)
             
         db.session.commit()
         return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
@@ -299,3 +324,53 @@ def showOtherProjects():
         # Отображаем страницу
         return render_template("other_projects.html", user=current_user, available_projects = saved_projects)
     
+    
+# Управляет проектным чатом
+@projects.route('/projects/<int:index>/chat', methods=["GET", "POST"])
+@login_required
+def accessProjectChat(index):
+    project = Project.query.filter_by(id=index).first()
+    chat_room = ChatRoom.query.filter_by(id=project.chatRoom).first()
+
+    # Если у пользователя нет доступа - останавливаем дальнейшую работу
+    if not has_access_to_project(user=current_user, project=project):
+        return render_template("forbidden.html", user=current_user)
+    
+    if request.method == "GET":
+        return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)
+    
+    # POST
+    create_message = request.form.get('create_message')
+    
+    if create_message:
+        message = Message(parent_id=chat_room.id, text=create_message, created_at=datetime.now().strftime('%Y-%m-%d-%H-%M'), \
+                            author_name = current_user.firstName, author_id = current_user.id)
+        db.session.add(message)
+        db.session.commit()
+        
+    return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)
+
+# Управляет комментариями к задачам
+@projects.route('/projects/<int:index>/<int:subproject>', methods=["GET", "POST"])
+@login_required
+def accessNoteChat(index):
+    project = Project.query.filter_by(id=index).first()
+    chat_room = ChatRoom.query.filter_by(id=project.chatRoom).first()
+
+    # Если у пользователя нет доступа - останавливаем дальнейшую работу
+    if not has_access_to_project(user=current_user, project=project):
+        return render_template("forbidden.html", user=current_user)
+    
+    if request.method == "GET":
+        return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)
+    
+    # POST
+    create_message = request.form.get('create_message')
+    
+    if create_message:
+        message = Message(parent_id=chat_room.id, text=create_message, created_at=datetime.now().strftime('%Y-%m-%d-%H-%M'), \
+                            author_name = current_user.firstName, author_id = current_user.id)
+        db.session.add(message)
+        db.session.commit()
+        
+    return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)   

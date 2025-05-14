@@ -4,87 +4,76 @@
 {% block content %}
 
 <div class="container" id='sign-up-container'>
-<div class="row pt-4 mt-4 mb-4">
-<div class="col-8">
+<div class="row pt-4 mt-4 mb-4 content-container colorw">
+<div class="col-8 mt-3">
+<form method="POST">
     <h1> Название проекта:   </h1>
-    <form method="POST">
         <div class="form-group">
-            <textarea
+            <textarea  
                 type="text"
-                class="form-control"
+                class="form-control colored_text"
                 id="name"
                 name="name"
+
                 >{{ project.name }}</textarea>
-            </br>
-            <button type="submit" class="btn btn-primary">Применить изменения</button>
         </div>
-    </form>
     <h2> Краткое описание проекта:   </h2>
-    <form method="POST">
         <div class="form-group">
             <textarea
                 type="text"
-                class="form-control"
+                class="form-control colored_text"
                 id="shortDescription"
                 name="shortDescription"
                 >{{ project.shortDescription }}</textarea>
-            </br>
-            <button type="submit" class="btn btn-primary">Применить изменения</button>
         </div>
-    </form>
     <h2> Описание проекта:   </h2>
-    <form method="POST">
         <div class="form-group">
             <textarea
                 type="text"
-                class="form-control"
+                class="form-control colored_text"
                 id="fullDescription"
                 name="fullDescription"
                 >{{ project.fullDescription }}</textarea>
-            </br>
-            <button type="submit" class="btn btn-primary">Применить изменения</button>
         </div>
-    </form>
     <h2> Цель проекта:   </h2>
-    <form method="POST">
         <div class="form-group">
             <textarea
                 type="text"
-                class="form-control"
+                class="form-control colored_text"
                 id="goal"
                 name="goal"
                 >{{ project.goal }}</textarea>
             </br>
-            <button type="submit" class="btn btn-primary">Применить изменения</button>
+            <button type="submit" class="btn btn-info">Применить изменения</button>
         </div>
     </form>
     
 
     <form class = "mt-2" action = {{ url_for('.showProject', index=project.id) }} method = "POST">
     <input type="hidden" name="project" value="{{ project.id }}" />
-    <button type="submit" class="btn btn-primary">Вернутся к проекту</button>
+    <button type="submit" class="btn btn-info">Вернутся к проекту</button>
     <br/>
     </form>
 </div>
-<div class="col-4">
+<div class="col-4 mt-3">
     <h2> Удаление проекта   </h2>
     <form method="POST">
         <div class="form-group">
             <input
                 type="text"
-                class="form-control"
+                class="form-control colored_text"
                 id="delete"
                 name="delete"
                 placeholder="Введите УДАЛИТЬ чтобы удалить проект"
                 ></input>
             </br>
-            <button type="submit" class="btn btn-primary">Удалить проект</button>
+            <button type="submit" class="btn btn-info">Удалить проект</button>
         </div>
     </form>
     <h2> Статус проекта:  {%if project.done == "True" %}выполнен{%else%}активный{%endif%} </h2>
     <form method = "POST">
     <input type="hidden" name="done" value="{{ project.id }}" />
-    <button type="submit" class="btn btn-primary">Изменить статус проекта</button>
+    <button type="submit" class="btn btn-info">Изменить статус проекта</button>
     <br/>
     </form>
     <h2 class="mt-2"> Добавление и удаления соучастников   </h2>
@@ -92,11 +81,11 @@
         <div class="form-group">
             {% for allowed_user in allowed_users %}
             <form method="POST">
-                <li class="list-group-item"> Имя: {{ allowed_user.firstName }} <br/> 
+                <li class="list-group-item item-standart"> Имя: {{ allowed_user.firstName }} <br/> 
                     id: {{ allowed_user.id }}
                     <input
                         type="hidden"
-                        class="form-control  border-0 hidden "
+                        class="form-control border-0 hidden "
                         id="to_delete_user_id"
                         name="to_delete_user_id"
                         value="{{ allowed_user.id  }}"
@@ -107,19 +96,20 @@
                 </li>
             </form>
             {% endfor %}
-            </br>
     </ul>
     <form method="POST">
     <input
         type="text"
-        class="form-control"
+        class="form-control colored_text"
         id="user_id"
         name="user_id"
         placeholder="Введите ID пользователя"
         ></input></br>
-    <button type="submit" class="btn btn-primary">Добавить</button>
+    <button type="submit" class="btn btn-info">Добавить</button>
     </div>
     </form>
 </div>
+
+
 
 {% endblock %}

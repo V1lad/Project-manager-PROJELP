@@ -3,6 +3,8 @@
 {% block title %}Проект{% endblock %}
 {% block content %}
 
+<div class="content-container mt-3">
+<div class = "colorw">
 <h3> Название проекта:  </h3>
 <span>{{ project.name }} </span> </br> </br>
 <h3> Краткое описание проекта:  </h3>
@@ -11,35 +13,46 @@
 <span>{{ project.fullDescription }}  </span> </br> </br>
 <h3> Цель проекта:  </h3>
 <span>{{ project.goal }}   </span> </br> </br>
-<form action = {{ url_for('.redactProject', index=project.id) }} method = "POST" class="mb-5">
+<form action = {{ url_for('.redactProject', index=project.id) }} method = "POST" class="mb-3">
 <input type="hidden" name="project" value="{{ project.id }}" />
-<button type="submit" class="btn btn-primary">Редактировать информацию о проекте</button>
-<br/>
+<button type="submit" class="btn btn-info">Редактировать информацию о проекте</button>
 </form>
-<h2> Содержание: </h2>
+<form action = {{ url_for('.accessProjectChat', index=project.id) }} method = "GET" class="mb-3">
+<input type="hidden" name="project" value="{{ project.id }}" />
+<button type="submit" class="btn btn-info">Открыть проектный чат</button>
+</form>
+</div>
+
+<h2 class="colorw"> Содержание: </h2>
 <ul class="list-group">
 {% for subproject in subprojects %}
-<div class="list-group-item">
+<div class="list-group-item colored_text">
     <h3><span {% if subproject.done == "True" %} style="text-decoration:line-through" {% endif %}> {{subproject.name}}</span>{% if subproject.done == "True" %} - Выполнен{% endif %}</h3>
     <p>{{subproject.shortDescription}}</p>
-    <form action = {{ url_for('.showSubProject', index=project.id, subproject=subproject.id) }} method = "POST">
+
+    <div class="btn-group" role="group" aria-label="Two buttons">
+        <form action = {{ url_for('.showSubProject', index=project.id, subproject=subproject.id) }} method="POST" class = "mr-1">
+            <div class="form-group">
     <input type="hidden" name="to_redact_subproject_id" value="{{ subproject.id }}" />
-    <button type="submit" class="btn btn-primary btn-sm mb-3">Открыть</button>
-    </form>
-    <form action = {{ url_for('.redactSubProject', index=project.id, subproject=subproject.id) }} method = "POST">
-    <input type="hidden" name="to_redact_subproject_id" value="{{ subproject.id }}" />
-    <button type="submit" class="btn btn-primary btn-sm">Редактировать</button>
-    <br/>
-    </form>
+    <button type="submit" class="btn btn-info btn-sm">Открыть</button>
+            </div>
+        </form>
+        <form action = {{ url_for('.redactSubProject', index=project.id, subproject=subproject.id) }} method="POST" class = "mr-1">
+            <div class="form-group">
+                <input type="hidden" name="to_redact_subproject_id" value="{{ subproject.id }}" />
+                <button type="submit" class="btn btn-info btn-sm">Редактировать</button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endfor %}
-<li class="list-group-item">
+<li class="list-group-item colored_text">
     <form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
-    <input type="text" class="form-control mb-3" name="to_create_subproject_name" placeholder="Название раздела" />
-    <button type="submit" class="btn btn-primary btn-sm">Создать раздел</button>
+    <input type="text" class="form-control mb-3 colored_text" name="to_create_subproject_name" placeholder="Название раздела" />
+    <button type="submit" class="btn btn-info btn-sm">Создать раздел</button>
     <br/>
     </form>
 </li>
 <ul>
-    
+</div>
 {% endblock %}

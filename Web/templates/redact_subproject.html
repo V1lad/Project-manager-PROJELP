@@ -4,42 +4,39 @@
 {% block content %}
 
 <div class="container" id='sign-up-container'>
-<div class="row pt-4 mt-4 mb-4">
-<div class="col-8">
-    <h1> Название раздела:   </h1>
+<div class="row pt-4 mt-4 content-container">
+<div class="col-8 colorw">
     <form method="POST">
+    <h1> Название раздела:   </h1>
         <div class="form-group">
             <textarea
                 type="text"
-                class="form-control"
+                class="form-control colored_text"
                 id="name"
                 name="name"
                 >{{ subproject.name }}</textarea>
-            </br>
-            <button type="submit" class="btn btn-primary">Применить изменения</button>
         </div>
-    </form>
     <h2> Краткое описание раздела:   </h2>
-    <form method="POST">
         <div class="form-group">
             <textarea
                 type="text"
-                class="form-control"
+                class="form-control colored_text"
                 id="description"
                 name="description"
                 >{{ subproject.shortDescription }}</textarea>
             </br>
-            <button type="submit" class="btn btn-primary">Применить изменения</button>
+            <button type="submit" class="btn btn-info">Применить изменения</button>
         </div>
     </form>
+
     <form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
     <input type="hidden" name="project" value="{{ project.id }}" />
-    <button type="submit" class="btn btn-primary">Вернутся к проекту</button>
+    <button type="submit" class="btn btn-info">Вернутся к проекту</button>
     <br/>
     </form>
 </div>
 <div class="col-4">
-    <h2> Удаление раздела   </h2>
+    <h2 class = "colorw"> Удаление раздела   </h2>
     <form method="POST">
         <div class="form-group">
             <input
@@ -50,13 +47,13 @@
                 placeholder="Введите УДАЛИТЬ чтобы удалить раздел"
                 ></input>
             </br>
-            <button type="submit" class="btn btn-primary">Удалить раздел</button>
+            <button type="submit" class="btn btn-info">Удалить раздел</button>
         </div>
     </form>
-    <h2> Статус раздела:  {%if subproject.done == "True" %}выполнен{%else%}активный{%endif%} </h2>
+    <h2 class = "colorw"> Статус раздела:  {%if subproject.done == "True" %}<b>выполнен{%else%}<b>активный{%endif%} </h2>
     <form method = "POST">
     <input type="hidden" name="done" value="{{ subproject.id }}" />
-    <button type="submit" class="btn btn-primary">Изменить статус раздела</button>
+    <button type="submit" class="btn btn-info">Изменить статус раздела</button>
     <br/>
     </form>
 </div>
