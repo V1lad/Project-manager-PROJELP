@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from . import db
 from flask_login import login_required, current_user
 from .models import Project, User, SubProject, Note, ChatRoom, Message
-from .functions import has_access_to_project, get_date, decode
+from .functions import has_access_to_project
 from datetime import datetime
 import json
 
