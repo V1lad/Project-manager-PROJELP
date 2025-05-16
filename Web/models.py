@@ -28,7 +28,7 @@ class Project(db.Model):
     goal = db.Column(db.String(255), default='')
     done = db.Column(db.String, default="False")
     
-    chatRoom = db.Column(db.Integer)
+    chatRoom = db.relationship('ChatRoom', uselist=False)
     allowedUsers = db.Column(db.JSON, default='[]')
     subprojects = db.relationship('SubProject')
     
@@ -37,7 +37,7 @@ class Project(db.Model):
         for subproject in self.subprojects:
             subproject.delete(db)
             
-        chatRoom = ChatRoom.query.filter_by(id=self.id).first()
+        chatRoom = self.chatRoom
         chatRoom.delete(db)
             
         db.session.delete(self)
@@ -76,11 +76,11 @@ class Note(db.Model):
     content = db.Column(db.String, default='')
     done = db.Column(db.String, default="False")
     
-    chatRoom = db.Column(db.Integer)
+    chatRoom = db.relationship('ChatRoom', uselist=False)
     
     # Корректно удаляет запись
     def delete(self, db):
-        chatRoom = ChatRoom.query.filter_by(id=self.id).first()
+        chatRoom = self.chatRoom
         if chatRoom:
             chatRoom.delete(db)
         db.session.delete(self)
@@ -92,7 +92,8 @@ class ChatRoom(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, unique=True)
     
-    parent_id = db.Column(db.Integer)
+    parent_project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
+    parent_note_id = db.Column(db.Integer, db.ForeignKey('notes.id'))
     type = db.Column(db.String, default='ProjectChat')
         
     messages = db.relationship('Message')

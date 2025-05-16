@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Проект{% endblock %}
+{% block title %}Комментарии{% endblock %}
 {% block content %}
 <div class="container mb-2">
-<ul class="list-group mt-5  content-container">
+<ul class="list-group mt-5 content-container">
     {% for message in chat_room.messages %}
         <li class="list-group-item message-bubble {% if message.author_id == current_user.id %}my-message{% else %}other-message{% endif %}">
         <div class="message-header">
@@ -11,7 +11,7 @@
                 {{ message.author_name}}
             </span>
             <span class="message-time text-muted">
-                {{ message.created_at }}
+                {{ get_time(message.created_at) }}
             </span>
         </div>
         <form method="POST">
@@ -23,16 +23,16 @@
     </li>
     {% endfor %}
     <li class="list-group-item message-bubble">
-        <form action = {{ url_for('.accessProjectChat', index=project.id) }} method = "POST">
-        <input type="text" class="form-control mb-3 border-0" name="create_message" placeholder="Введите сообщение" />
-        <button type="submit" class="btn btn-info btn-sm">Отправить сообщение</button>
+        <form action = {{ url_for('.accessNoteChat', project_id=project.id, note_id=note.id, subproject_id=subproject.id) }} method = "POST">
+        <input type="text" class="form-control mb-3 border-0" name="create_message" placeholder="Введите комментарий" />
+        <button type="submit" class="btn btn-info btn-sm">Оставить комментарий</button>
         <br/>
         </form>
     </li>
 </ul>
-<form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
+<form action = {{ url_for('.showSubProject', index=project.id, subproject=subproject.id) }} method = "POST">
 <input type="hidden" name="project" value="{{ project.id }}" />
-<button type="submit" class="btn btn-info mt-3">Вернуться к проекту</button>
+<button type="submit" class="btn btn-info mt-3">Вернуться к разделу</button>
 <br/>
 </form>
 </div>

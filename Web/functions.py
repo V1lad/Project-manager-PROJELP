@@ -8,3 +8,9 @@ def has_access_to_project(user, project):
 
     allowed_users = loads(project.allowedUsers)
     return str(user.id) in allowed_users
+
+# Приводит время из БД к виду для показа на странице
+def get_time(time_str):
+    # 2025-05-16-18-21 --> 16:18 16.05.2025
+    dates = time_str.split("-")
+    return f"{dates[3]}:{dates[4]} {'.'.join(dates[0:3][::-1])}"

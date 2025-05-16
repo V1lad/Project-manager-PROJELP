@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from . import db
 from flask_login import login_required, current_user
 from .models import Project, User, SubProject, Note, ChatRoom, Message
-from .functions import has_access_to_project
+from .functions import has_access_to_project, get_time
 from datetime import datetime
 import json
 
@@ -119,12 +119,11 @@ def newProject():
         new_project = Project(name=name, shortDescription=shortDescription, owner_id=current_user.id)
         db.session.add(new_project)
         db.session.commit()
-        new_chat_room = ChatRoom(parent_id=new_project.id)
+        
+        new_chat_room = ChatRoom(parent_project_id=new_project.id)
         db.session.add(new_chat_room)
         db.session.commit()
-        new_project.chatRoom = new_chat_room.id
-        db.session.commit()
-        
+
         return redirect(url_for('projects.allProjects'))
 
 # Описывает логику просмотра проекта
@@ -228,15 +227,13 @@ def showSubProject(index, subproject):
         elif show_chat:
             note = Note.query.filter_by(id=int(show_chat)).first()
             if not note.chatRoom:
-                chat_room = ChatRoom(parent_id=note.id)
+                chat_room = ChatRoom(parent_note_id=note.id)
                 db.session.add(chat_room)
                 db.session.commit()
-                note.chatRoom = chat_room.id
-                db.session.commit()
             else:
-                chat_room = ChatRoom.query.filter_by(id=project.chatRoom).first()
+                chat_room = note.chatRoom
 
-            return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)
+            return redirect(url_for('projects.accessNoteChat', project_id=project.id, subproject_id=subproject.id, note_id=note.id, **request.args))
             
         db.session.commit()
         return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
@@ -329,14 +326,14 @@ def showOtherProjects():
 @login_required
 def accessProjectChat(index):
     project = Project.query.filter_by(id=index).first()
-    chat_room = ChatRoom.query.filter_by(id=project.chatRoom).first()
+    chat_room = project.chatRoom
 
     # Если у пользователя нет доступа - останавливаем дальнейшую работу
     if not has_access_to_project(user=current_user, project=project):
         return render_template("forbidden.html", user=current_user)
     
     if request.method == "GET":
-        return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)
+        return render_template("show_project_chat.html", project=project, user=current_user, chat_room=chat_room)
     
     # POST
     create_message = request.form.get('create_message')
@@ -347,22 +344,24 @@ def accessProjectChat(index):
         db.session.add(message)
         db.session.commit()
         
-    return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)
+    return render_template("show_project_chat.html", project=project, user=current_user, chat_room=chat_room)
 
 # Управляет комментариями к задачам
-@projects.route('/projects/<int:index>/<int:subproject>', methods=["GET", "POST"])
+@projects.route('/projects/<int:project_id>/<int:subproject_id>/<int:note_id>/comments', methods=["GET", "POST"])
 @login_required
-def accessNoteChat(index):
-    project = Project.query.filter_by(id=index).first()
-    chat_room = ChatRoom.query.filter_by(id=project.chatRoom).first()
+def accessNoteChat(project_id, note_id, subproject_id):
+    project = Project.query.filter_by(id=project_id).first()
+    subproject = SubProject.query.filter_by(id=subproject_id).first()
+    note = Note.query.filter_by(id=note_id).first()
+    chat_room = note.chatRoom
 
     # Если у пользователя нет доступа - останавливаем дальнейшую работу
     if not has_access_to_project(user=current_user, project=project):
         return render_template("forbidden.html", user=current_user)
     
     if request.method == "GET":
-        return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)
-    
+        return render_template("show_note_chat.html", subproject=subproject, user=current_user, chat_room=chat_room, note=note, project=project, \
+            get_time=get_time) 
     # POST
     create_message = request.form.get('create_message')
     
@@ -372,4 +371,5 @@ def accessNoteChat(index):
         db.session.add(message)
         db.session.commit()
         
-    return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)   
+    return render_template("show_note_chat.html", subproject=subproject, user=current_user, chat_room=chat_room, note=note, project=project, \
+            get_time=get_time) 
