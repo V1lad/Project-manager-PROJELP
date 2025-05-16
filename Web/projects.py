@@ -200,7 +200,7 @@ def showSubProject(index, subproject):
         content_id = request.form.get('content_id')
         delete = request.form.get('delete')
         complete = request.form.get('complete')
-        show_chat = request.form.get('complete')
+        show_chat = request.form.get('show_chat')
         
         
         subproject = SubProject.query.filter_by(id=subproject).first()
@@ -220,23 +220,22 @@ def showSubProject(index, subproject):
                 note.done = "False"
             else:
                 note.done = "True"
-
-            
+  
         elif content_id:
             note = Note.query.filter_by(id=int(content_id)).first()
             note.content = content
         
         elif show_chat:
-            note = Note.query.filter_by(id=int(delete)).first()
+            note = Note.query.filter_by(id=int(show_chat)).first()
             if not note.chatRoom:
-                new_chat_room = ChatRoom(parent_id=note.id)
-                db.session.add(new_chat_room)
+                chat_room = ChatRoom(parent_id=note.id)
+                db.session.add(chat_room)
                 db.session.commit()
-                note.chatRoom = new_chat_room.id
+                note.chatRoom = chat_room.id
                 db.session.commit()
             else:
                 chat_room = ChatRoom.query.filter_by(id=project.chatRoom).first()
-            
+
             return render_template("show_chat_room.html", project=project, user=current_user, chat_room=chat_room)
             
         db.session.commit()
