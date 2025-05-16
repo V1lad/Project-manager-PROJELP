@@ -6,6 +6,11 @@ from .functions import has_access_to_project, get_time
 from datetime import datetime
 import json
 
+### ВРЕМЕННОЕ
+import sys
+###
+
+
 DB_MAX_INT = 10000000000000000
 projects = Blueprint('projects', __name__)
 
@@ -191,53 +196,58 @@ def showSubProject(index, subproject):
     if request.method == "POST":
         
         project = Project.query.filter_by(id=index).first()
+        subproject = SubProject.query.filter_by(id=subproject).first()
+        
         if not has_access_to_project(user=current_user, project=project):
             return render_template("forbidden.html", user=current_user)
         
         create_note = request.form.get('create_note')
+        title = request.form.get('title')
         content = request.form.get('content')
-        content_id = request.form.get('content_id')
-        delete = request.form.get('delete')
-        complete = request.form.get('complete')
-        show_chat = request.form.get('show_chat')
+        note_id = request.form.get('note_id')
         
+        # DEBUGGING TOOL  print(request.form, file=sys.stdout) ==============================================================
         
-        subproject = SubProject.query.filter_by(id=subproject).first()
+        if not note_id and not create_note:
+            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
         
-        if create_note:
-            note = Note(parent_id=subproject.id, content=create_note, done="False")
+        if 'create_note' in request.form:
+            note = Note(parent_id=subproject.id, title=create_note, status="ready")
             db.session.add(note)
-            
-        elif delete:
-            note = Note.query.filter_by(id=int(delete)).first()
-            if note:
-                note.delete(db)
-
-        elif complete:   
-            note = Note.query.filter_by(id=int(complete)).first()
-            if note:
-                if note.done == "True":
-                    note.done = "False"
-                else:
-                    note.done = "True"
-  
-        elif content_id:
-            note = Note.query.filter_by(id=int(content_id)).first()
-            if note:
-                note.content = content
+            db.session.commit()
+            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
         
-        elif show_chat:
-            note = Note.query.filter_by(id=int(show_chat)).first()
-            if note:
-                if not note.chatRoom:
-                    chat_room = ChatRoom(parent_note_id=note.id)
-                    db.session.add(chat_room)
-                    db.session.commit()
-                else:
-                    chat_room = note.chatRoom
+        note = Note.query.filter_by(id=int(note_id)).first()
+        
+        if not note:
+            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+        
+        if 'save_button' in request.form:
+            note.title = title
+            note.content = content
+        
+        elif 'status_button' in request.form:
+            note.next_status()
+              
+        elif 'comments_button'in request.form:
 
-            return redirect(url_for('projects.accessNoteChat', project_id=project.id, subproject_id=subproject.id, note_id=note.id, **request.args))
+            if not note.chatRoom:
+                chat_room = ChatRoom(parent_note_id=note.id)
+                db.session.add(chat_room)
+                db.session.commit()
+            else:
+                chat_room = note.chatRoom
+                    
+            return redirect(url_for('projects.accessNoteChat', project_id=project.id, subproject_id=subproject.id, note_id=note.id, **request.args))  
+              
+        elif 'delete_button' in request.form:
             
+            note.delete(db)
+                
+        elif 'planning_button' in request.form:
+            
+            return redirect(url_for('projects.accessNoteChat', project_id=project.id, subproject_id=subproject.id, note_id=note.id, **request.args))  
+                
         db.session.commit()
         return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
 
