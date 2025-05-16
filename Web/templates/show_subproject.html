@@ -3,55 +3,152 @@
 {% block title %}Проект{% endblock %}
 {% block content %}
 
-<ul class="list-group mt-5 colored_text">
+<ul class="list-group mt-4">
     {% for note in subproject.notes %}
-    <li class="list-group-item">
-        <form method="POST">
-            <div class="form-group">
-                <div {% if note.done == "True" %}style="text-decoration:line-through"{% endif %}><textarea
-                    type="text"
-                    class="form-control border-0" 
-                    id="content"
-                    name="content"
-                    >{{ note.content }}</textarea>
+    <li class="list-group-item bg-dark text-light mb-3 border rounded-3 shadow-lg {% if note.status == 'done' %}border-success
+        {% elif note.status == 'in_progress' %}border-primary
+        {% elif note.status == 'abandoned' %}border-secondary
+        {% else %}border-info{% endif %}">
+        
+        <!-- Единая форма -->
+        <form method="POST" id="note-form-{{ note.id }}">
+            <input type="hidden" name="note_id" value="{{ note.id }}">
+            
+            <!-- Заголовок и прогресс -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <input type="text" 
+                       class="form-control bg-dark text-light  h4 w-50 {% if note.status == 'done' %}border-success
+                    {% elif note.status == 'in_progress' %}border-primary
+                    {% elif note.status == 'abandoned' %}border-secondary
+                    {% else %}border-info{% endif %}"
+                       name="title" 
+                       value="{{ note.title }}">
+                
+                <div class="text-end">
+                    <div class="text-info fw-bold display-6">
+                        📈 0{{ note.progress }}%
+                    </div>
+                    <div class="text-info fw-bold">
+                        ⏳ {{ "Время задания или время не задано"}}
+                    </div>
                 </div>
-            <input type="hidden" name="content_id" value="{{ note.id }}" />
-            <button type="submit" class="btn btn-outline-dark btn-sm mt-1">Сохранить</button>
+            </div>
+
+            <!-- Текст задачи -->
+            <div class="mb-3 position-relative">
+                <textarea class="form-control bg-dark text-light auto-resize 
+                            {% if note.status == 'done' %}border-success
+                            {% elif note.status == 'in_progress' %}border-primary
+                            {% elif note.status == 'abandoned' %}border-secondary
+                            {% else %}border-info{% endif %}" 
+                          name="content">{{ note.content }}</textarea>
+            </div>
+
+            <!-- Панель управления -->
+            <div class="d-flex justify-content-between align-items-center gap-2">
+                <!-- Кнопка сохранения -->
+                <button type="submit" name="save_button" class="btn btn-sm btn-outline-info">💾 Сохранить</button>
+
+                <!-- Группа кнопок справа -->
+                <div class="d-flex gap-2">
+                    <!-- Кнопка статуса -->
+                    <button type="submit" 
+                            name="status_button"
+                            class="btn btn-sm 
+                                {% if note.status == 'done' %}btn-success
+                                {% elif note.status == 'in_progress' %}btn-primary
+                                {% elif note.status == 'abandoned' %}btn-secondary
+                                {% else %}btn-info{% endif %}">
+                        {% if note.status == 'done' %}✅ Выполнено
+                        {% elif note.status == 'in_progress' %}⏳ В работе
+                        {% elif note.status == 'abandoned' %}⏸️ Отложено
+                        {% else %}🕑 Не начата {% endif %}
+                    </button>
+
+                    <button class="btn btn-sm btn-outline-purple" 
+                            name="planning_button">
+                        📅 Управление
+                    </button>
+
+                    <button class="btn btn-sm btn-outline-purple" 
+                            name="comments_button">
+                        💬 {{ note.chatRoom.messages | length }} Комментариев
+                    </button>
+
+                    <button type="submit" 
+                            name="delete_button" 
+                            class="btn btn-sm btn-outline-danger">
+                        🗑️ Удалить
+                    </button>
+                </div>
             </div>
         </form>
-        <div class="btn-group" role="group" aria-label="Two buttons">
-            <form method="POST" class = "mr-1">
-                <div class="form-group">
-                    <input type="hidden" name="complete" value="{{ note.id }}" />
-                    <button type="submit" class="btn btn-outline-dark btn-sm">Выполнить</button>
-                </div>
-            </form>
-            <form method="POST" class = "mr-1">
-                <div class="form-group">
-                    <input type="hidden" name="delete" value="{{ note.id }}" />
-                    <button type="submit" class="btn btn-outline-dark btn-sm">Удалить</button>
-                </div>
-            </form>
-            <form method="POST" >
-                <div class="form-group">
-                    <input type="hidden" name="show_chat" value="{{ note.id }}" />
-                    <button type="submit" class="btn btn-outline-dark btn-sm">Комментарии</button>
-                </div>
-            </form>
-        </div>
+
     </li>
     {% endfor %}
-    <li class="list-group-item">
-        <form action = {{ url_for('.showSubProject', index=project.id, subproject=subproject.id) }} method = "POST">
-        <input type="text" class="form-control mb-3 border-0" name="create_note" placeholder="Содержание задачи" />
-        <button type="submit" class="btn btn-info btn-sm">Создать задачу</button>
-        <br/>
-        </form>
-    </li>
 </ul>
+
+<style>
+    .border-purple { border: 1px solid #6f42c1 !important; }
+    .btn-outline-purple {
+        color: #9d7fe8;
+        border-color: #6f42c1;
+    }
+    .btn-outline-purple:hover {
+        background-color: #6f42c1;
+        color: white;
+    }
+    .auto-resize {
+        min-height: 100px;
+        resize: none;
+        transition: all 0.3s;
+    }
+    .auto-resize:focus {
+        box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+    }
+    .colorp {
+        color: #6f42c1;
+    }
+    /* Добавленные стили для новых элементов */
+    .flex-shrink-0 {
+        flex-shrink: 0;
+    }
+    
+    .gap-3 {
+        gap: 1rem;
+    }
+    
+    /* Адаптивность для формы создания */
+    @media (max-width: 576px) {
+        .d-flex {
+            flex-direction: column;
+        }
+        
+        .flex-shrink-0 {
+            width: 100%;
+        }
+    }
+
+</style>
+<div class="list-group mt-1 mb-2">
+    <div class="list-group-item bg-dark text-light rounded-3 border-purple shadow-lg">
+        <form action = {{ url_for('.showSubProject', index=project.id, subproject=subproject.id) }} method="POST" class="d-flex align-items-center gap-3">
+            <input type="text" 
+                   class="form-control bg-dark text-light border-purple" 
+                   name="create_note"
+                   placeholder="Название новой задачи"
+                   required>
+            <button type="submit" 
+                    class="btn btn-info flex-shrink-0" 
+                    name="create">
+                Создать
+            </button>   
+        </form>
+    </div>
+</div>
 <form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
 <input type="hidden" name="project" value="{{ project.id }}" />
-<button type="submit" class="btn btn-info mt-3">Вернутся к проекту</button>
+<button type="submit" class="btn btn-info mt-3 mb-3"> ← Вернуться к проекту</button>
 <br/>
 </form>
 
