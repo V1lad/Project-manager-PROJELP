@@ -73,8 +73,10 @@ class Note(db.Model):
     created_at = db.Column(db.String(31))
     planned_at = db.Column(db.String(31))
     
+    # done ready abandoned in_progress
+    title = db.Column(db.String, default='')
     content = db.Column(db.String, default='')
-    done = db.Column(db.String, default="False")
+    status = db.Column(db.String, default='')
     
     chatRoom = db.relationship('ChatRoom', uselist=False)
     
@@ -85,6 +87,9 @@ class Note(db.Model):
             chatRoom.delete(db)
         db.session.delete(self)
 
+    def next_status(self):
+        statuses = ["ready", "in_progress", "done", "abandoned"]
+        self.status = statuses[(statuses.index(self.status) + 1) % 4]
     
 # Описывает сущность комната чата
 class ChatRoom(db.Model):
