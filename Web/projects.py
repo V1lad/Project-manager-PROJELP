@@ -210,28 +210,31 @@ def showSubProject(index, subproject):
             
         elif delete:
             note = Note.query.filter_by(id=int(delete)).first()
-            note.delete(db)
+            if note:
+                note.delete(db)
 
         elif complete:   
             note = Note.query.filter_by(id=int(complete)).first()
-
-            if note.done == "True":
-                note.done = "False"
-            else:
-                note.done = "True"
+            if note:
+                if note.done == "True":
+                    note.done = "False"
+                else:
+                    note.done = "True"
   
         elif content_id:
             note = Note.query.filter_by(id=int(content_id)).first()
-            note.content = content
+            if note:
+                note.content = content
         
         elif show_chat:
             note = Note.query.filter_by(id=int(show_chat)).first()
-            if not note.chatRoom:
-                chat_room = ChatRoom(parent_note_id=note.id)
-                db.session.add(chat_room)
-                db.session.commit()
-            else:
-                chat_room = note.chatRoom
+            if note:
+                if not note.chatRoom:
+                    chat_room = ChatRoom(parent_note_id=note.id)
+                    db.session.add(chat_room)
+                    db.session.commit()
+                else:
+                    chat_room = note.chatRoom
 
             return redirect(url_for('projects.accessNoteChat', project_id=project.id, subproject_id=subproject.id, note_id=note.id, **request.args))
             
