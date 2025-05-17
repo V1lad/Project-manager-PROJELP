@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Управление задачей{% endblock %}
+{% block content %}
+
+<div class="list-group mt-4">
+    <div class="list-group-item bg-dark text-light mb-3 border rounded-3 shadow-lg border-purple">
+        <h4 class="colorp mb-4">⚙️ Управление задачей</h4>
+        <form method="POST">
+            <input type="hidden" name="note_id" value="{{ note.id }}">
+
+            <!-- Верхний ряд: Прогресс и важность -->
+            <div class="row mb-4 g-3">
+                <div class="col-md-8">
+                    <label class="form-label colorp">📈 Прогресс выполнения</label>
+                    <div class="input-group">
+                        <input type="number" min="0" max="100" 
+                               class="form-control bg-dark text-light border-purple" 
+                               name="progress" 
+                               value="{{ note.progress }}">
+                        <span class="input-group-text bg-dark border-purple text-light">%</span>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label colorp">⚖️ Множитель прогресса</label>
+                    <div class="input-group">
+                        <input type="number" min="1" max="100" 
+                               class="form-control bg-dark text-light border-purple" 
+                               name="importance" 
+                               value="{{ note.importance }}">
+                        <span class="input-group-text bg-dark border-purple text-light">/100</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Третий ряд: Дата и статус уведомлений -->
+            <div class="row mb-4 g-3">
+                <div class="col-md-6">
+                    <label class="form-label colorp">📅 Дата завершения</label>
+                    <input type="date" class="form-control bg-dark text-light border-purple" 
+                           name="due_date" value="{{ note.due_date if note.due_date else '' }}">
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label colorp">🔔 Текущее уведомление</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-purple text-light">
+                            {% if note.notifications_enabled %}✅{% else %}❌{% endif %}
+                        </span>
+                        <input type="text" class="form-control bg-dark text-light border-purple" 
+                               value="{{ 'время' }}" 
+                               readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Четвёртый ряд: Настройка уведомлений -->
+            <div class="row mb-4 g-3">
+                <div class="col-md-8">
+                    <label class="form-label colorp">⏰ Настроить уведомление</label>
+                    <select class="form-select bg-dark text-light border-purple" 
+                            name="notification_time">
+                        <option value="60">За 1 час</option>
+                        <option value="720">За 12 часов</option>
+                        <option value="1440">За 24 часа</option>
+                        <option value="4320">За 3 дня</option>
+                        <option value="10080">За 7 дней</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" name="create_notification" 
+                            class="btn btn-info w-100">
+                        Создать
+                    </button>
+                </div>
+            </div>
+
+            <!-- Кнопки управления -->
+            <div class="d-flex gap-3 mt-4">
+                <button type="submit" name="save" class="btn btn-info flex-grow-1">
+                    💾 Сохранить изменения
+                </button>
+                <a href="{{ url_for('projects.showSubProject', index=project.id, subproject=subproject.id) }}" 
+                   class="btn btn-info flex-grow-1">
+                    ← Вернуться
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .btn-outline-primary { border-color: #0d6efd; color: #0d6efd; }
+    .btn-outline-info { border-color: #0dcaf0; color: #0dcaf0; }
+    .btn-outline-warning { border-color: #ffc107; color: #ffc107; }
+    .btn-outline-danger { border-color: #dc3545; color: #dc3545; }
+    .btn-outline-dark { border-color: #212529; color: #212529; }
+    
+    .input-group-text,
+    .form-control[readonly] {
+        background-color: #2a2a2a !important;
+        border-color: #6f42c1;
+    }
+    
+    .h-100 { height: calc(100% - 15px); }
+</style>
+
+{% endblock %}
