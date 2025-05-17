@@ -246,10 +246,45 @@ def showSubProject(index, subproject):
                 
         elif 'planning_button' in request.form:
             
-            return redirect(url_for('projects.accessNoteChat', project_id=project.id, subproject_id=subproject.id, note_id=note.id, **request.args))  
+            return redirect(url_for('projects.manageNote', project_id=project.id, subproject_id=subproject.id, note_id=note.id, **request.args))  
                 
         db.session.commit()
         return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+    return render_template("forbidden.html", user=current_user)
+
+# Обрабатывает управление конкретной задачей
+@projects.route('/projects/<int:project_id>/<int:subproject_id>/<int:note_id>/redact', methods=["GET", "POST"])
+@login_required
+def manageNote(project_id, subproject_id, note_id):
+    if request.method == "GET":
+        
+        project = Project.query.filter_by(id=project_id).first()
+        subproject = SubProject.query.filter_by(id=subproject_id).first()
+        
+        if not has_access_to_project(user=current_user, project=project):
+            return render_template("forbidden.html", user=current_user)
+        
+        note = Note.query.filter_by(id=int(note_id)).first()
+        
+        if not note:
+            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+
+        return render_template("redact_note.html", project=project, user=current_user, subproject=subproject, note=note)
+    
+    elif request.method == "POST":
+
+        project = Project.query.filter_by(id=project_id).first()
+        subproject = SubProject.query.filter_by(id=subproject_id).first()
+        
+        if not has_access_to_project(user=current_user, project=project):
+            return render_template("forbidden.html", user=current_user)
+        
+        note = Note.query.filter_by(id=int(note_id)).first()
+        
+        if not note:
+            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+
+    return render_template("forbidden.html", user=current_user)
 
 # Обрабатывает запросы по адресу /other_projects с методами Get и Post 
 @projects.route('/other_projects', methods=["GET", "POST"])
