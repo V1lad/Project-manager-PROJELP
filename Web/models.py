@@ -77,6 +77,9 @@ class Note(db.Model):
     title = db.Column(db.String, default='')
     content = db.Column(db.String, default='')
     status = db.Column(db.String, default='')
+    priority = db.Column(db.Integer, default=0)
+    progress = db.Column(db.Integer, default=0)
+    progress_coefficient = db.Column(db.Integer, default=1)
     
     chatRoom = db.relationship('ChatRoom', uselist=False)
     
