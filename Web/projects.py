@@ -190,7 +190,7 @@ def redactSubProject(index, subproject):
         db.session.commit()    
         return render_template("redact_subproject.html", project=project, user=current_user, subproject=subproject)
     
-@projects.route('/projects/<int:index>/<int:subproject>', methods=["POST"])
+@projects.route('/projects/<int:index>/<int:subproject>', methods=["GET", "POST"])
 @login_required
 def showSubProject(index, subproject):
     if request.method == "POST":
@@ -250,6 +250,17 @@ def showSubProject(index, subproject):
                 
         db.session.commit()
         return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+    
+    elif request.method == "GET":
+        
+        project = Project.query.filter_by(id=index).first()
+        subproject = SubProject.query.filter_by(id=subproject).first()
+        
+        if not has_access_to_project(user=current_user, project=project):
+            return render_template("forbidden.html", user=current_user)
+        
+        return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+    
     return render_template("forbidden.html", user=current_user)
 
 # Обрабатывает управление конкретной задачей
@@ -283,7 +294,19 @@ def manageNote(project_id, subproject_id, note_id):
         
         if not note:
             return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
-
+        
+        progress = request.form.get('progress')
+        progress_coefficient = request.form.get('progress_coefficient')
+        planned_at = request.form.get('planned_at')
+        # ADD VALIDATION 1 - 100
+        if 'save_button' in request.form:
+            note.progress = progress
+            note.progress_coefficient = progress_coefficient
+            note.planned_at = planned_at
+        
+        db.session.commit()
+        return render_template("redact_note.html", project=project, user=current_user, subproject=subproject, note=note)
+    
     return render_template("forbidden.html", user=current_user)
 
 # Обрабатывает запросы по адресу /other_projects с методами Get и Post 
