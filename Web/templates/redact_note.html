@@ -27,9 +27,8 @@
                     <div class="input-group">
                         <input type="number" min="1" max="100" 
                                class="form-control bg-dark text-light border-purple" 
-                               name="importance" 
-                               value="{{ note.importance }}">
-                        <span class="input-group-text bg-dark border-purple text-light">/100</span>
+                               name="progress_coefficient" 
+                               value="{{ note.progress_coefficient }}">
                     </div>
                 </div>
             </div>
@@ -39,7 +38,7 @@
                 <div class="col-md-6">
                     <label class="form-label colorp">📅 Дата завершения</label>
                     <input type="date" class="form-control bg-dark text-light border-purple" 
-                           name="due_date" value="{{ note.due_date if note.due_date else '' }}">
+                           name="planned_at" value="{{ note.planned_at }}">
                 </div>
                 
                 <div class="col-md-6">
@@ -78,12 +77,12 @@
 
             <!-- Кнопки управления -->
             <div class="d-flex gap-3 mt-4">
-                <button type="submit" name="save" class="btn btn-info flex-grow-1">
+                <button type="submit" name="save_button" class="btn btn-info">
                     💾 Сохранить изменения
                 </button>
                 <a href="{{ url_for('projects.showSubProject', index=project.id, subproject=subproject.id) }}" 
-                   class="btn btn-info flex-grow-1">
-                    ← Вернуться
+                   class="btn btn-info ml-3">
+                 Вернуться к разделу
                 </a>
             </div>
         </form>
