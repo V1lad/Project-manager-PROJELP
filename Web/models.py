@@ -70,8 +70,7 @@ class Note(db.Model):
     
     parent_id = db.Column(db.Integer, db.ForeignKey('subprojects.id'))
     
-    created_at = db.Column(db.String(31))
-    planned_at = db.Column(db.String(31))
+    planned_at = db.Column(db.String(31), default="")
     
     # done ready abandoned in_progress
     title = db.Column(db.String, default='')
