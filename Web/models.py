@@ -1,5 +1,6 @@
 from . import db
 from flask_login import UserMixin
+import sys
 
 # Описывает сущность пользователь
 class User(db.Model, UserMixin):
@@ -27,6 +28,7 @@ class Project(db.Model):
     fullDescription = db.Column(db.String(255), default='')
     goal = db.Column(db.String(255), default='')
     done = db.Column(db.String, default="False")
+    progress = db.Column(db.Integer, default=0)
     
     chatRoom = db.relationship('ChatRoom', uselist=False)
     allowedUsers = db.Column(db.JSON, default='[]')
@@ -41,7 +43,25 @@ class Project(db.Model):
         chatRoom.delete(db)
             
         db.session.delete(self)
+
+        return 
+    
+    def update_progress(self, db):
+        max_progress = len(self.subprojects) * 100
+        current_progress = 0
         
+        for subproject in self.subprojects:  
+            subproject.update_progress(db)
+            current_progress += subproject.progress
+            
+        if max_progress == 0:
+            self.progress = 0
+        else:
+            self.progress = round(current_progress * 100/max_progress)
+            
+        db.session.commit()
+        return  
+    
 # Описывает сущность раздел
 class SubProject(db.Model):
     __tablename__ = 'subprojects'
@@ -53,15 +73,38 @@ class SubProject(db.Model):
     name = db.Column(db.String(150), default='')
     shortDescription = db.Column(db.String(255), default='')
     done = db.Column(db.String, default="False")
-    
+    progress = db.Column(db.Integer, default=0)
+        
     notes = db.relationship('Note')
     
+    def update_progress(self, db):
+        max_coef = 0
+        current_coef = 0
+        
+        for note in self.notes:  
+            progress = int(note.progress)
+            progress_coefficient = int(note.progress_coefficient)
+            
+            progress * progress_coefficient
+                
+            current_coef += progress * progress_coefficient
+            max_coef += 100 * progress_coefficient
+        
+        if max_coef == 0:
+            self.progress = 0
+        else:   
+            self.progress = round(current_coef * 100/max_coef)
+
+        db.session.commit()
+        return  
+
     # Корректно раздел и его элементы
     def delete(self, db):
         for note in self.notes:
             note.delete(db)
         db.session.delete(self)
-        
+        return
+    
 # Описывает сущность запись
 class Note(db.Model):
     __tablename__ = 'notes'
@@ -79,16 +122,23 @@ class Note(db.Model):
     priority = db.Column(db.Integer, default=0)
     progress = db.Column(db.Integer, default=0)
     progress_coefficient = db.Column(db.Integer, default=1)
+    notifications_enabled = db.Column(db.String, default='False')
     
     chatRoom = db.relationship('ChatRoom', uselist=False)
+    notification = db.relationship('Notification', uselist=False)
     
     # Корректно удаляет запись
     def delete(self, db):
         chatRoom = self.chatRoom
         if chatRoom:
             chatRoom.delete(db)
+            
+        notification = self.chatRoom
+        if notification:
+            notification.delete(db)
         db.session.delete(self)
-
+        return
+    
     def next_status(self):
         statuses = ["ready", "in_progress", "done", "abandoned"]
         self.status = statuses[(statuses.index(self.status) + 1) % 4]
@@ -110,7 +160,7 @@ class ChatRoom(db.Model):
         for message in self.messages:
             message.delete(db)
         db.session.delete(self)
-        
+        return
 
 # Описывает сущность комната чата
 class Message(db.Model):
@@ -128,3 +178,19 @@ class Message(db.Model):
     # Корректно удаляет себя
     def delete(self, db):
         db.session.delete(self)
+        return
+    
+# Описывает сущность уведомление
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    
+    planned_at = db.Column(db.String)
+    
+    parent_id = db.Column(db.Integer, db.ForeignKey('notes.id'))
+    
+    # Корректно удаляет себя
+    def delete(self, db):
+        db.session.delete(self)
+        return
