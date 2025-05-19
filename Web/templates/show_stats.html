@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика проекта{% endblock %}
+{% block content %}
+
+<div class="container py-5 content-container-extra"> <!-- Заголовок и кнопки управления --> 
+    <div class="d-flex justify-content-between align-items-center mb-4"> 
+        <h1 class="text-light">{{ project.name }} - Статистика</h1> 
+        <div class="btn-group"> <a href="{{ url_for('.showProject', index=project.id) }}" class="btn btn-purple"> 
+            <i class="bi bi-arrow-left"></i> Назад </a> <button class="btn btn-purple" onclick="exportData('excel')"> 
+            <i class="bi bi-file-earmark-excel"></i> Excel </button> <button class="btn btn-purple" onclick="exportData('csv')"> 
+            <i class="bi bi-filetype-csv"></i> CSV </button> 
+        </div> 
+    </div>
+<!-- Основная статистика -->
+<div class="row g-4 mb-4">
+    <!-- Общий прогресс -->
+    <div class="col-12">
+        <div class="card bg-dark-2 text-light">
+            <div class="card-body">
+                <h4 class="mb-3"><i class="bi bi-speedometer2 me-2"></i>Общая готовность {{ project.progress }}% </h4>
+                <div class="progress bg-dark" style="height: 20px;">
+                    <div class="progress-bar bg-purple progress-bar-striped" 
+                         role="progressbar" 
+                         style="width: {{ project.progress }}%">
+                        {{ project.progress }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основные метрики -->
+    <div class="col-md-6">
+        <div class="card bg-dark-2 text-light h-100">
+            <div class="card-body">
+                <h4 class="mb-4"><i class="bi bi-clipboard-data me-2"></i>Основные показатели</h4>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="metric-item">
+                            <div class="metric-value display-5">{{ subprojects_num }}</div>
+                            <div class="metric-label">Подпроектов</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-item">
+                            <div class="metric-value display-5">{{ tasks_num }}</div>
+                            <div class="metric-label">Всего задач</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статусы задач -->
+    <div class="col-md-6">
+        <div class="card bg-dark-2 text-light h-100">
+            <div class="card-body">
+                <h4 class="mb-4"><i class="bi bi-list-task me-2"></i>Статусы задач</h4>
+                <div class="status-list">
+                    <div class="status-item d-flex justify-content-between mb-2">
+                        <span>Завершено</span>
+                        <span class="badge bg-success">{{ tasks_done }}</span>
+                    </div>
+                    <div class="status-item d-flex justify-content-between mb-2">
+                        <span>В работе</span>
+                        <span class="badge bg-primary">{{ tasks_in_progress }}</span>
+                    </div>
+                    <div class="status-item d-flex justify-content-between mb-2">
+                        <span>Ожидают</span>
+                        <span class="badge bg-warning text-dark">{{ tasks_ready }}</span>
+                    </div>
+                    <div class="status-item d-flex justify-content-between">
+                        <span>Отложено</span>
+                        <span class="badge bg-secondary">{{ tasks_abandoned }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Срочные задачи -->
+<div class="row g-4">
+    <!-- Задачи с приближающимся сроком -->
+    <div class="col-12">
+        <div class="card bg-dark-2 text-light">
+            <div class="card-body">
+                <h4 class="mb-4"><i class="bi bi-clock me-2"></i>Срочные задачи</h4>
+                
+                <div class="deadline-category mb-4">
+                    <h5 class="text-purple">В течение 3 дней</h5>
+                    {% for note in due_3d %}
+                    <div class="deadline-item alert alert-purple">
+                        {{ note.title }} <span class="float-end">{{ get_date(note.planned_at) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="deadline-category mb-4">
+                    <h5 class="text-purple">В течение недели</h5>
+                    {% for note in due_week %}
+                    <div class="deadline-item alert alert-purple">
+                        {{ note.title }} <span class="float-end">{{ get_date(note.planned_at) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="deadline-category">
+                    <h5 class="text-purple">В течение месяца</h5>
+                    {% for note in due_month %}
+                    <div class="deadline-item alert alert-purple">
+                        {{ note.title }} <span class="float-end">{{ get_date(note.planned_at) }}</span>
+                    </div>
+                    {% endfor %}    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div><style> .metric-item { text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; } .metric-value { color: #9d7fe8; font-weight: 700; } .metric-label { color: #8e8ea8; font-size: 0.9rem; } .alert-purple { background: rgba(111,66,193,0.15); border: 1px solid #6f42c1; color: #cbb8f0; border-radius: 8px; } .deadline-item { padding: 10px 15px; margin: 5px 0; display: flex; justify-content: space-between; align-items: center; } .text-purple { color: #9d7fe8 !important; } .progress-bar-striped { background-image: linear-gradient( 45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent ); background-size: 1rem 1rem; } </style><script> function exportData(format) { // Логика экспорта данных console.log(`Экспорт данных в формате ${format}`); } </script>
+{% endblock %}
