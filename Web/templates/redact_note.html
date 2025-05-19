@@ -4,7 +4,7 @@
 {% block content %}
 
 <div class="list-group mt-4">
-    <div class="list-group-item bg-dark text-light mb-3 border rounded-3 shadow-lg border-purple">
+    <div class="list-group-item bg-dark-2 text-light mb-3 border rounded-3 shadow-lg border-purple">
         <h4 class="colorp mb-4">⚙️ Управление задачей</h4>
         <form method="POST">
             <input type="hidden" name="note_id" value="{{ note.id }}">
@@ -15,10 +15,10 @@
                     <label class="form-label colorp">📈 Прогресс выполнения</label>
                     <div class="input-group">
                         <input type="number" min="0" max="100" 
-                               class="form-control bg-dark text-light border-purple" 
+                               class="form-control bg-dark-2 text-light border-purple" 
                                name="progress" 
                                value="{{ note.progress }}">
-                        <span class="input-group-text bg-dark border-purple text-light">%</span>
+                        <span class="input-group-text bg-dark-2 border-purple text-light">%</span>
                     </div>
                 </div>
                 
@@ -26,7 +26,7 @@
                     <label class="form-label colorp">⚖️ Множитель прогресса</label>
                     <div class="input-group">
                         <input type="number" min="1" max="100" 
-                               class="form-control bg-dark text-light border-purple" 
+                               class="form-control bg-dark-2 text-light border-purple" 
                                name="progress_coefficient" 
                                value="{{ note.progress_coefficient }}">
                     </div>
@@ -37,18 +37,18 @@
             <div class="row mb-4 g-3">
                 <div class="col-md-6">
                     <label class="form-label colorp">📅 Дата завершения</label>
-                    <input type="date" class="form-control bg-dark text-light border-purple" 
+                    <input type="date" class="form-control bg-dark-2 text-light border-purple" 
                            name="planned_at" value="{{ note.planned_at }}">
                 </div>
                 
                 <div class="col-md-6">
                     <label class="form-label colorp">🔔 Текущее уведомление</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-dark border-purple text-light">
-                            {% if note.notifications_enabled %}✅{% else %}❌{% endif %}
+                        <span class="input-group-text bg-dark-2 border-purple text-light">
+                            {% if note.notifications_enabled == "True" %}✅{% else %}❌{% endif %}
                         </span>
-                        <input type="text" class="form-control bg-dark text-light border-purple" 
-                               value="{{ 'время' }}" 
+                        <input type="text" class="form-control bg-dark-2 text-light border-purple" 
+                               value="{% if notification %} {{ get_date(notification.planned_at) }} {% else %}Время не задно{% endif %}" 
                                readonly>
                     </div>
                 </div>
@@ -56,9 +56,9 @@
 
             <!-- Четвёртый ряд: Настройка уведомлений -->
             <div class="row mb-4 g-3">
-                <div class="col-md-8">
+                <div class="col-md-6">
                     <label class="form-label colorp">⏰ Настроить уведомление</label>
-                    <select class="form-select bg-dark text-light border-purple" 
+                    <select class="form-select bg-dark-2 text-light border-purple" 
                             name="notification_time">
                         <option value="60">За 1 час</option>
                         <option value="720">За 12 часов</option>
@@ -67,21 +67,36 @@
                         <option value="10080">За 7 дней</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" name="create_notification" 
-                            class="btn btn-info w-100">
-                        Создать
-                    </button>
+
+                <div class="col-md-6">
+                    <div class="row g-3 align-items-end">
+                        <!-- Первая кнопка -->
+                        <div class="col-4">
+                            <button type="submit" name="create_notification" 
+                                    class="btn btn-outline-purple w-100">
+                                Создать
+                            </button>
+                        </div>
+
+                        <!-- Вторая кнопка с лейблом -->
+                        <div class="col-8">
+                            <label class="form-label colorp">🚀 Разрешение уведомлений</label>
+                            <button type="submit" name="change_notification_status" 
+                                    class="btn btn-outline-purple w-100">
+                                {% if note.notifications_enabled == "True" %} Запретить уведомления {% else %}Разрешить уведомления{% endif %}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Кнопки управления -->
             <div class="d-flex gap-3 mt-4">
-                <button type="submit" name="save_button" class="btn btn-info">
+                <button type="submit" name="save_button" class="btn btn-purple">
                     💾 Сохранить изменения
                 </button>
                 <a href="{{ url_for('projects.showSubProject', index=project.id, subproject=subproject.id) }}" 
-                   class="btn btn-info ml-3">
+                   class="btn btn-purple ml-3">
                  Вернуться к разделу
                 </a>
             </div>
@@ -98,7 +113,7 @@
     
     .input-group-text,
     .form-control[readonly] {
-        background-color: #2a2a2a !important;
+        background-color: #2a2a2a;
         border-color: #6f42c1;
     }
     
