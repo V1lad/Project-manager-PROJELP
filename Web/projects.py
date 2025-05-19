@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from . import db
 from flask_login import login_required, current_user
-from .models import Project, User, SubProject, Note, ChatRoom, Message
-from .functions import has_access_to_project, get_time
-from datetime import datetime
+from .models import Project, User, SubProject, Note, ChatRoom, Message, Notification
+from .functions import has_access_to_project, get_time, get_date
+from datetime import datetime, date, timedelta
 import json
 
 ### ВРЕМЕННОЕ
@@ -24,14 +24,25 @@ def allProjects():
     return render_template("projects.html", user=current_user, available_projects = projects)
 
 # Управляет функционалом по редакитированию информации о конкретном проекте
-@projects.route('/projects/<int:index>/redact', methods=["POST"])
+@projects.route('/projects/<int:index>/redact', methods=["POST", "GET"])
 @login_required
 def redactProject(index):
     project = Project.query.filter_by(id=index).first()
     
+    # В случае некорректной информации останавливаем выполнение
+    if not project:
+        return redirect(url_for('projects.allProjects'))
+
     # Если у пользователя нет доступа - останавливаем дальнейшую работу
     if not has_access_to_project(user=current_user, project=project):
         return render_template("forbidden.html", user=current_user)
+    
+    # Получаем актуальную информацию из БД
+    allowed_users_list = json.loads(project.allowedUsers)
+    allowed_users = [User.query.filter_by(id=int(i)).first() for i in allowed_users_list]
+    
+    if request.method == "GET":
+        return render_template("redact_project.html", project=project, user=current_user, allowed_users=allowed_users)
     
     # Получение информации из запроса
     name = request.form.get('name')
@@ -43,28 +54,11 @@ def redactProject(index):
     to_delete_user_id = request.form.get('to_delete_user_id')
     is_project_done_id = request.form.get('done')
     
-    # Получаем актуальную информацию из БД
-    allowed_users_list = json.loads(project.allowedUsers)
-    allowed_users = [User.query.filter_by(id=int(i)).first() for i in allowed_users_list]
-    
-    # В случае некорректной информации останавливаем выполнение
-    if not project:
-        return redirect(url_for('allProjects'))
-
     # Удаление проекта
     if delete_word == "УДАЛИТЬ":
         project.delete(db)
         db.session.commit()
         return redirect(url_for('projects.allProjects'))
-    
-   # if name:
-   #     project.name = name
-   # elif fullDescription:
-   #     project.fullDescription = fullDescription
-   # elif shortDescription:
-   #     project.shortDescription = shortDescription
-   # elif goal:
-    #    project.goal = goal
     
     if name:
         project.name = name
@@ -132,50 +126,56 @@ def newProject():
         return redirect(url_for('projects.allProjects'))
 
 # Описывает логику просмотра проекта
-@projects.route('/projects/<int:index>', methods=["POST"])
+@projects.route('/projects/<int:index>', methods=["POST", "GET"])
 @login_required
 def showProject(index):
-    if request.method == "POST":
-        
-        project = Project.query.filter_by(id=index).first()
-        
-        if not has_access_to_project(user=current_user, project=project):
-            return render_template("forbidden.html", user=current_user)
+    project = Project.query.filter_by(id=index).first()
+    if not project:
+        return redirect(url_for('projects.allProjects'))
     
-        to_create_subproject_name = request.form.get('to_create_subproject_name')
-        
-        subprojects = project.subprojects
-        
-        if to_create_subproject_name:
-            subproject = SubProject(name = to_create_subproject_name, parent_id = project.id)
-            db.session.add(subproject)
-            subprojects.append(subproject)
-            
-        db.session.commit()
+    if not has_access_to_project(user=current_user, project=project):
+        return render_template("forbidden.html", user=current_user)
+
+    subprojects = project.subprojects
+    
+    if request.method == "GET":
         return render_template("show_project.html", project=project, user=current_user, subprojects=subprojects)
+    
+    to_create_subproject_name = request.form.get('to_create_subproject_name')
+    
+    if to_create_subproject_name:
+        subproject = SubProject(name = to_create_subproject_name, parent_id = project.id)
+        db.session.add(subproject)
+        subprojects.append(subproject)
+        
+    db.session.commit()
+    return render_template("show_project.html", project=project, user=current_user, subprojects=subprojects)
 
 # Описывает редактирования раздела
-@projects.route('/projects/<int:index>/<int:subproject>/redact', methods=["POST"])
+@projects.route('/projects/<int:index>/<int:subproject>/redact', methods=["POST", "GET"])
 @login_required
 def redactSubProject(index, subproject):
+    project = Project.query.filter_by(id=index).first()
+    subproject = SubProject.query.filter_by(id=subproject).first()    
+    # В случае некорректной информации останавливаем выполнение
+    if not project or not subproject:
+        return redirect(url_for('projects.allProjects'))
+    
+    if not has_access_to_project(user=current_user, project=project):
+        return render_template("forbidden.html", user=current_user)
+        
     if request.method == "POST":
-        
-        project = Project.query.filter_by(id=index).first()
-        
-        if not has_access_to_project(user=current_user, project=project):
-            return render_template("forbidden.html", user=current_user)
-        
         name = request.form.get('name')
         description = request.form.get('description')
         delete_word = request.form.get('delete')
         is_subproject_done_id = request.form.get('done')
-        
-        subproject = SubProject.query.filter_by(id=subproject).first()
-        
+
         if delete_word == "УДАЛИТЬ":
             subproject.delete(db)
+            project.update_progress(db)   
             db.session.commit()
-            return redirect(url_for('projects.allProjects'))
+            
+            return redirect(url_for('projects.showProject', index=project.id, **request.args))
         
         if name:
             subproject.name = name
@@ -188,7 +188,10 @@ def redactSubProject(index, subproject):
                 subproject.done = "True"
             
         db.session.commit()    
-        return render_template("redact_subproject.html", project=project, user=current_user, subproject=subproject)
+        
+    return render_template("redact_subproject.html", project=project, user=current_user, subproject=subproject)
+    
+    
     
 @projects.route('/projects/<int:index>/<int:subproject>', methods=["GET", "POST"])
 @login_required
@@ -209,18 +212,18 @@ def showSubProject(index, subproject):
         # DEBUGGING TOOL  print(request.form, file=sys.stdout) ==============================================================
         
         if not note_id and not create_note:
-            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)
         
         if 'create_note' in request.form:
             note = Note(parent_id=subproject.id, title=create_note, status="ready")
             db.session.add(note)
             db.session.commit()
-            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)
         
         note = Note.query.filter_by(id=int(note_id)).first()
         
         if not note:
-            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)
         
         if 'save_button' in request.form:
             note.title = title
@@ -243,13 +246,14 @@ def showSubProject(index, subproject):
         elif 'delete_button' in request.form:
             
             note.delete(db)
-                
+            project.update_progress(db)    
+            
         elif 'planning_button' in request.form:
             
             return redirect(url_for('projects.manageNote', project_id=project.id, subproject_id=subproject.id, note_id=note.id, **request.args))  
                 
         db.session.commit()
-        return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+        return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)
     
     elif request.method == "GET":
         
@@ -259,7 +263,7 @@ def showSubProject(index, subproject):
         if not has_access_to_project(user=current_user, project=project):
             return render_template("forbidden.html", user=current_user)
         
-        return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+        return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)
     
     return render_template("forbidden.html", user=current_user)
 
@@ -280,7 +284,9 @@ def manageNote(project_id, subproject_id, note_id):
         if not note:
             return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
 
-        return render_template("redact_note.html", project=project, user=current_user, subproject=subproject, note=note)
+        notification = note.notification
+        
+        return render_template("redact_note.html", project=project, user=current_user, subproject=subproject, note=note, notification=notification)
     
     elif request.method == "POST":
 
@@ -291,6 +297,8 @@ def manageNote(project_id, subproject_id, note_id):
             return render_template("forbidden.html", user=current_user)
         
         note = Note.query.filter_by(id=int(note_id)).first()
+        notification = note.notification
+        print("NOTIF", notification, file=sys.stdout)
         
         if not note:
             return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
@@ -303,9 +311,28 @@ def manageNote(project_id, subproject_id, note_id):
             note.progress = progress
             note.progress_coefficient = progress_coefficient
             note.planned_at = planned_at
-        
+            
+            project.update_progress(db)
+            
+        elif 'change_notification_status' in request.form:   
+            note.notifications_enabled = ["False", "True"][note.notifications_enabled == "False"]   
+            
+        elif 'create_notification' in request.form:  
+            if note.planned_at:
+                notif_offset = request.form.get('notification_time') 
+                time_delta = timedelta(hours=int(notif_offset))
+                notification_date = (datetime.strptime(note.planned_at, "%Y-%m-%d") - time_delta).date()
+                print(notification_date, file=sys.stdout)
+                if notification:
+                    print("IN", file=sys.stdout)
+                    notification.planned_at = str(notification_date)
+                else:
+                    print("OUT", file=sys.stdout)
+                    notification = Notification(planned_at=notification_date, parent_id=note.id)
+                    db.session.add(notification)
+                    
         db.session.commit()
-        return render_template("redact_note.html", project=project, user=current_user, subproject=subproject, note=note)
+        return render_template("redact_note.html", project=project, user=current_user, subproject=subproject, note=note, notification = notification, get_date=get_date)
     
     return render_template("forbidden.html", user=current_user)
 
@@ -444,3 +471,63 @@ def accessNoteChat(project_id, note_id, subproject_id):
         
     return render_template("show_note_chat.html", subproject=subproject, user=current_user, chat_room=chat_room, note=note, project=project, \
             get_time=get_time) 
+    
+# Управляет статистикой и экспортом
+@projects.route('/projects/<int:index>/stats', methods=["POST", "GET"])
+@login_required
+def showStats(index):
+    project = Project.query.filter_by(id=index).first()
+    
+    # В случае некорректной информации останавливаем выполнение
+    if not project:
+        return redirect(url_for('projects.allProjects'))
+
+    # Если у пользователя нет доступа - останавливаем дальнейшую работу
+    if not has_access_to_project(user=current_user, project=project):
+        return render_template("forbidden.html", user=current_user)
+    
+    subprojects = project.subprojects
+    subprojects_num = len(subprojects)
+    
+    tasks_num = 0
+    tasks_ready = 0
+    tasks_done = 0
+    tasks_abandoned = 0
+    tasks_in_progress = 0
+    
+    due_3d = []
+    due_week = []
+    due_month = []
+    
+    for subproject in subprojects:
+        for note in subproject.notes:
+            if note.status == "in_progress":
+                tasks_in_progress += 1
+            elif note.status == "ready":
+                tasks_ready += 1
+            elif note.status == "done":
+                tasks_done += 1
+            elif note.status == "abandoned":
+                tasks_abandoned += 1
+            if note.planned_at:
+                planned_time = date(*[int(i) for i in note.planned_at.split("-")])
+                current_time = date.today()     
+                timedelta = planned_time - current_time
+                if timedelta.days < 0:
+                    continue
+                elif timedelta.days <= 3:
+                    due_3d.append(note)
+                elif timedelta.days <= 7:
+                    due_week.append(note)
+                elif timedelta.days <= 30: 
+                    due_month.append(note)
+                         
+    tasks_num = tasks_ready + tasks_done + tasks_abandoned + tasks_in_progress
+    if request.method == "GET":
+        return render_template("show_stats.html", project=project, user=current_user, due_3d = due_3d, due_week=due_week, due_month=due_month, \
+            subprojects_num=subprojects_num, tasks_in_progress=tasks_in_progress, tasks_abandoned=tasks_abandoned, tasks_done=tasks_done, tasks_ready=tasks_ready, tasks_num=tasks_num, get_date=get_date)
+    
+        
+    db.session.commit()
+    
+    return render_template("show_stats.html", project=project, user=current_user)
