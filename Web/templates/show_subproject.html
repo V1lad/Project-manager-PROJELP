@@ -5,7 +5,7 @@
 
 <ul class="list-group mt-4">
     {% for note in subproject.notes %}
-    <li class="list-group-item bg-dark text-light mb-3 border rounded-3 shadow-lg {% if note.status == 'done' %}border-success
+    <li class="list-group-item bg-dark-2 text-light mb-3 border rounded-3 shadow-lg {% if note.status == 'done' %}border-success
         {% elif note.status == 'in_progress' %}border-primary
         {% elif note.status == 'abandoned' %}border-secondary
         {% else %}border-info{% endif %}">
@@ -17,7 +17,7 @@
             <!-- Заголовок и прогресс -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <input type="text" 
-                       class="form-control bg-dark text-light  h4 w-50 {% if note.status == 'done' %}border-success
+                       class="form-control bg-dark-2 text-light  h4 w-50 {% if note.status == 'done' %}border-success
                     {% elif note.status == 'in_progress' %}border-primary
                     {% elif note.status == 'abandoned' %}border-secondary
                     {% else %}border-info{% endif %}"
@@ -25,18 +25,19 @@
                        value="{{ note.title }}">
                 
                 <div class="text-end">
-                    <div class="text-info fw-bold display-6">
+                    <div class="text-info fw-bold">
                         📈 {{ note.progress }}%
                     </div>
+
                     <div class="text-info fw-bold">
-                        ⏳ {{ note.planned_at }}
+                       {% if note.planned_at  %} ⏳ {{ get_date(note.planned_at) }} {% endif %}
                     </div>
                 </div>
             </div>
 
             <!-- Текст задачи -->
             <div class="mb-3 position-relative">
-                <textarea class="form-control bg-dark text-light auto-resize 
+                <textarea class="form-control bg-dark-2 text-light auto-resize 
                             {% if note.status == 'done' %}border-success
                             {% elif note.status == 'in_progress' %}border-primary
                             {% elif note.status == 'abandoned' %}border-secondary
@@ -89,15 +90,8 @@
 </ul>
 
 <style>
-    .border-purple { border: 1px solid #6f42c1 !important; }
-    .btn-outline-purple {
-        color: #9d7fe8;
-        border-color: #6f42c1;
-    }
-    .btn-outline-purple:hover {
-        background-color: #6f42c1;
-        color: white;
-    }
+
+
     .auto-resize {
         min-height: 3.7lh;
         resize: none;
@@ -113,7 +107,7 @@
     .flex-shrink-0 {
         flex-shrink: 0;
     }
-    
+
     .gap-3 {
         gap: 1rem;
     }
@@ -128,18 +122,18 @@
             width: 100%;
         }
     }
-
+    
 </style>
 <div class="list-group mt-1 mb-2">
-    <div class="list-group-item bg-dark text-light rounded-3 border-purple shadow-lg">
+    <div class="list-group-item bg-dark-2 text-light rounded-3 border-purple shadow-lg">
         <form action = {{ url_for('.showSubProject', index=project.id, subproject=subproject.id) }} method="POST" class="d-flex align-items-center gap-3">
             <input type="text" 
-                   class="form-control bg-dark text-light border-purple" 
+                   class="form-control bg-dark-2 text-light border-purple" 
                    name="create_note"
                    placeholder="Название новой задачи"
                    required>
             <button type="submit" 
-                    class="btn btn-info flex-shrink-0" 
+                    class="btn btn-purple flex-shrink-0" 
                     name="create">
                 Создать
             </button>   
@@ -148,7 +142,7 @@
 </div>
 <form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
 <input type="hidden" name="project" value="{{ project.id }}" />
-<button type="submit" class="btn btn-info mt-3 mb-3"> Вернуться к проекту</button>
+<button type="submit" class="btn btn-purple mt-3 mb-3"> Вернуться к проекту</button>
 <br/>
 </form>
 
