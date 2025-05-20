@@ -97,8 +97,17 @@ app.register_blueprint(views, url_prefix='/')
 app.register_blueprint(auth, url_prefix='/')
 app.register_blueprint(projects, url_prefix='/')
 
+# Создаём БД
 with app.app_context():
     db.create_all() 
+
+    # Создаём администратора 
+    if not User.query.filter_by(id=1).first():
+        with open("web/keys/admin_password.txt", "r") as file:
+            admin = User(email="vlad@mail.ru", firstName="Vlad", password=file.readline(), is_admin="True") 
+            db.session.add(admin)
+            db.session.commit()
+
 
 # Подключаем управление аутенификацией
 login_manager = LoginManager()
