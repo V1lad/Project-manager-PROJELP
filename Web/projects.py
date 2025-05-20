@@ -282,11 +282,11 @@ def manageNote(project_id, subproject_id, note_id):
         note = Note.query.filter_by(id=int(note_id)).first()
         
         if not note:
-            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
+            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)
 
         notification = note.notification
         
-        return render_template("redact_note.html", project=project, user=current_user, subproject=subproject, note=note, notification=notification)
+        return render_template("redact_note.html", project=project, user=current_user, subproject=subproject, note=note, notification=notification, get_date=get_date)
     
     elif request.method == "POST":
 
@@ -322,12 +322,9 @@ def manageNote(project_id, subproject_id, note_id):
                 notif_offset = request.form.get('notification_time') 
                 time_delta = timedelta(hours=int(notif_offset))
                 notification_date = (datetime.strptime(note.planned_at, "%Y-%m-%d") - time_delta).date()
-                print(notification_date, file=sys.stdout)
                 if notification:
-                    print("IN", file=sys.stdout)
                     notification.planned_at = str(notification_date)
                 else:
-                    print("OUT", file=sys.stdout)
                     notification = Notification(planned_at=notification_date, parent_id=note.id)
                     db.session.add(notification)
                     
