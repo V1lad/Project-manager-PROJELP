@@ -1,8 +1,8 @@
-from Web import create_app
+from Web import get_app
+import sys
 
-# Создаём приложение
-app = create_app()
-
-# Запускаем приложение
 if __name__ == "__main__":
-    app.run(debug=True)
+    
+    # Создаём приложение
+    app = get_app()
+    app.run()
