@@ -3,17 +3,9 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link
-            rel="stylesheet"
-            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-            crossorigin="anonymous"
-            />
-        <link
-            rel="stylesheet"
-            href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
-            crossorigin="anonymous"
-            />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+       
         <title>{% block title %}Главная страница{% endblock %}</title>
         <style type="text/css">
             .form-control-borderless {
@@ -88,6 +80,15 @@
             border-radius: 10px;
             }
 
+            .content-container-extra {
+                background-color: rgba(44, 31, 53, 0.92);
+                padding: 25px;
+                border-radius: 12px;
+                border: 1px solid rgba(255,255,255,0.1);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                backdrop-filter: blur(6px);
+            }
+
             /* Для лучшей читаемости контента добавьте полупрозрачный слой */
             .content-container-light {
             background-color: rgba(206, 182, 200, 0.6);
@@ -133,9 +134,21 @@
             padding: 0.2rem 0;
         }
         
-        .bi {
-            vertical-align: -2px;
+        .bg-dark-2 { 
+            background-color: #1a1a2e !important; 
+            border: 1px solid #2e2e4a; 
         }
+        .btn-purple { background-color: #6f42c1; color: white; }
+        .btn-purple:hover { background-color: #5c32a8; color: white; }
+        .btn-outline-purple {
+            color: #9d7fe8;
+            border-color: #6f42c1;
+        }
+        .btn-outline-purple:hover {
+            background-color: #6f42c1;
+            color: white;
+        }
+        .border-purple { border: 1px solid #6f42c1 !important; }
     </style> 
     </head>
     
@@ -200,15 +213,13 @@
         {% if category == 'error' %}
         <div class="alert alert-danger alter-dismissable fade show" role="alert">
             {{ message }}
-            <button type="button" class="close" data-dismiss="alert">
-            <span aria-hidden="true">&times;</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert">
             </button>
         </div>
         {% else %}
         <div class="alert alert-success alter-dismissable fade show" role="alert">
             {{ message }}
-            <button type="button" class="close" data-dismiss="alert">
-            <span aria-hidden="true">&times;</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert">
             </button>
         </div>
         {% endif %}
@@ -216,20 +227,7 @@
         {% endif %}
         {% endwith %}
         <div class="container">{% block content %} {% endblock %}</div>
-        <script
-            src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-            crossorigin="anonymous"
-            ></script>
-        <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-            crossorigin="anonymous"
-            ></script>
-        <script
-            src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-            crossorigin="anonymous"
-            ></script>
+        <!-- Boostsrap bundle import -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     </body>
 </html>
