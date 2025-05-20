@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from . import db
 from flask_login import login_required, current_user
 from .models import Project, User, SubProject, Note, ChatRoom, Message, Notification
-from .functions import has_access_to_project, get_time, get_date, clean_sheet_name
+from .functions import has_access_to_project, get_time, get_date, clean_sheet_name, has_redact_rights_to_project
 from datetime import datetime, date, timedelta
 import json
 import csv
@@ -27,6 +27,57 @@ def allProjects():
     
     return render_template("projects.html", user=current_user, available_projects = projects)
 
+# Показывает все проекты
+@projects.route('/admin_projects', methods=["GET"])
+@login_required
+def adminProjects():
+    
+    if current_user.is_admin != "True":
+        flash("У вас отсутствуют права для просмотра данной страницы", category="error")
+        return render_template("forbidden.html", user=current_user)
+    
+    projects = Project.query.all()
+    return render_template("projects.html", user=current_user, available_projects = projects)
+
+# Показывает все ваши проекты
+@projects.route('/admin_users', methods=["GET", "POST"])
+@login_required
+def adminUsers():
+    
+    if current_user.is_admin != "True":
+        flash("У вас отсутствуют права для просмотра данной страницы", category="error")
+        return render_template("forbidden.html", user=current_user)
+    
+    users = User.query.all()
+    
+    if request.method == "GET":
+        return render_template("admin_users.html", user=current_user, users = users)
+    
+    user_id = request.form.get('user_id')
+    user = User.query.filter_by(id=int(user_id)).first()
+    
+    if not user:
+        return render_template("admin_users.html", user=current_user, users = users)
+    
+    if user.id == current_user.id:
+        flash("Невозможно совершать действия над своим аккаунтом", category="error")
+        return render_template("admin_users.html", user=current_user, users = users)
+    elif user.id == 1:
+        flash("Невозможно совершить действие над аккаунтом главного администратора", category="error")
+        return render_template("admin_users.html", user=current_user, users = users)
+    
+    if 'role_button' in request.form:
+        user.is_admin = ["True", "False"][user.is_admin == "True"]
+        
+    elif 'delete_button' in request.form:
+        db.session.delete(user)
+        
+    # В БУДУЩЕМ УДАЛЯТЬ ПРОЕКТЫ ПОЛЬЗОВАТЕЛЯ №№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№
+    db.session.commit()
+    users = User.query.all()
+    return render_template("admin_users.html", user=current_user, users = users)
+
+
 # Управляет функционалом по редакитированию информации о конкретном проекте
 @projects.route('/projects/<int:index>/redact', methods=["POST", "GET"])
 @login_required
@@ -39,13 +90,18 @@ def redactProject(index):
 
     # Если у пользователя нет доступа - останавливаем дальнейшую работу
     if not has_access_to_project(user=current_user, project=project):
+        flash("У вас отсутствуют права для просмотра данной страницы", category="error")
         return render_template("forbidden.html", user=current_user)
+    
+    if not has_redact_rights_to_project(user=current_user, project=project):
+        flash("У вас отсутствуют права для просмотра данной страницы", category="error")
+        return redirect(url_for('projects.showProject', index=index))
     
     # Получаем актуальную информацию из БД
     allowed_users_list = json.loads(project.allowedUsers)
-    allowed_users = [User.query.filter_by(id=int(i)).first() for i in allowed_users_list]
     
     if request.method == "GET":
+        allowed_users = [[User.query.filter_by(id=int(i[0])).first(), i[1]] for i in allowed_users_list]
         return render_template("redact_project.html", project=project, user=current_user, allowed_users=allowed_users)
     
     # Получение информации из запроса
@@ -56,27 +112,34 @@ def redactProject(index):
     delete_word = request.form.get('delete')
     user_id = request.form.get('user_id')
     to_delete_user_id = request.form.get('to_delete_user_id')
-    is_project_done_id = request.form.get('done')
-    
+ 
     # Удаление проекта
     if delete_word == "УДАЛИТЬ":
         project.delete(db)
         db.session.commit()
         return redirect(url_for('projects.allProjects'))
     
-    if name:
+    if 'save_button' in request.form:
         project.name = name
         project.fullDescription = fullDescription
         project.shortDescription = shortDescription
         project.goal = goal
         
     elif to_delete_user_id:
-        allowed_users_list.remove(to_delete_user_id)
+        to_pop_index = -1
+        for num, record in enumerate(allowed_users_list):
+            if record[0] == to_delete_user_id:
+                to_pop_index = num
+                break
+
+        if to_pop_index == -1:
+            return redirect(url_for('projects.allProjects'))
+        
+        allowed_users_list.pop(to_pop_index)
         project.allowedUsers = json.dumps(allowed_users_list)
-        allowed_users.remove(User.query.filter_by(id=to_delete_user_id).first())
         
     # Изменение состояния проекта
-    elif is_project_done_id:
+    elif 'done' in request.form:
         if project.done == "True":
             project.done = "False"
         else:
@@ -88,24 +151,33 @@ def redactProject(index):
         user_to_add = User.query.filter_by(id=user_id).first()
         if not user_to_add:
             flash("Пользователь с таким ID не найден", category="error")
-            return render_template("redact_project.html", project=project, user=current_user, allowed_users=allowed_users)
-        
+    
         elif project.owner_id == user_to_add.id:
             flash("Вы не можете добавить владельца", category="error")
-            return render_template("redact_project.html", project=project, user=current_user, allowed_users=allowed_users)
-
+            
         else:
             # Проверяем, если ли уже у запрашиваемого пользователя доступ к проекту
-            if user_id not in allowed_users_list:
-                allowed_users_list.append(user_id)
-                added_user = User.query.filter_by(id=user_id).first()
-                allowed_users.append(added_user)
-                project.allowedUsers = json.dumps(allowed_users_list)
+            for record in allowed_users_list:
+                if user_id == record[0]:
+                    flash("Пользователю с таким ID уже предоставлен доступ", category="error")
+                    break
             else:
-                flash("Пользователю с таким ID уже предоставлен доступ", category="error")
+                allowed_users_list.append([user_id, 0])
+                project.allowedUsers = json.dumps(allowed_users_list)   
                 
+    elif 'toggle_access'in request.form:            
+        to_change_access_user_id = request.form.get('toggle_access')
+
+        for record in allowed_users_list:
+            if record[0] == to_change_access_user_id:
+                record[1] = not(record[1])
+                break
+        
+        project.allowedUsers = json.dumps(allowed_users_list)
+        
     db.session.commit()
     
+    allowed_users = [[User.query.filter_by(id=int(i[0])).first(), i[1]] for i in allowed_users_list]
     return render_template("redact_project.html", project=project, user=current_user, allowed_users=allowed_users)
 
 # Описывает создание проекта
@@ -138,9 +210,12 @@ def showProject(index):
         return redirect(url_for('projects.allProjects'))
     
     if not has_access_to_project(user=current_user, project=project):
-        return render_template("forbidden.html", user=current_user)
-
+        return redirect(url_for('projects.allProjects'))
+    
     subprojects = project.subprojects
+    
+    if not has_redact_rights_to_project(user=current_user, project=project):
+        return render_template("show_project.html", project=project, user=current_user, subprojects=subprojects)
     
     if request.method == "GET":
         return render_template("show_project.html", project=project, user=current_user, subprojects=subprojects)
@@ -165,9 +240,15 @@ def redactSubProject(index, subproject):
     if not project or not subproject:
         return redirect(url_for('projects.allProjects'))
     
-    if not has_access_to_project(user=current_user, project=project):
+    if not has_access_to_project(user=current_user, project=project): 
+        flash("У вас отсутствуют права для просмотра данной страницы", category="error")
         return render_template("forbidden.html", user=current_user)
-        
+    
+    if not has_redact_rights_to_project(user=current_user, project=project):
+        flash("У вас отсутствуют права для просмотра данной страницы", category="error")
+        return redirect(url_for('projects.showProject', index=index))
+
+   
     if request.method == "POST":
         name = request.form.get('name')
         description = request.form.get('description')
@@ -195,8 +276,6 @@ def redactSubProject(index, subproject):
         
     return render_template("redact_subproject.html", project=project, user=current_user, subproject=subproject)
     
-    
-    
 @projects.route('/projects/<int:index>/<int:subproject>', methods=["GET", "POST"])
 @login_required
 def showSubProject(index, subproject):
@@ -208,6 +287,9 @@ def showSubProject(index, subproject):
         if not has_access_to_project(user=current_user, project=project):
             return render_template("forbidden.html", user=current_user)
         
+        if not has_redact_rights_to_project(user=current_user, project=project):
+            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)
+    
         create_note = request.form.get('create_note')
         title = request.form.get('title')
         content = request.form.get('content')
@@ -276,37 +358,28 @@ def showSubProject(index, subproject):
 @projects.route('/projects/<int:project_id>/<int:subproject_id>/<int:note_id>/redact', methods=["GET", "POST"])
 @login_required
 def manageNote(project_id, subproject_id, note_id):
-    if request.method == "GET":
-        
-        project = Project.query.filter_by(id=project_id).first()
-        subproject = SubProject.query.filter_by(id=subproject_id).first()
-        
-        if not has_access_to_project(user=current_user, project=project):
-            return render_template("forbidden.html", user=current_user)
-        
-        note = Note.query.filter_by(id=int(note_id)).first()
-        
-        if not note:
-            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)
+    
+    project = Project.query.filter_by(id=project_id).first()
+    subproject = SubProject.query.filter_by(id=subproject_id).first()
+    
+    if not has_access_to_project(user=current_user, project=project):
+        return render_template("forbidden.html", user=current_user)    
 
-        notification = note.notification
-        
+    if not has_redact_rights_to_project(user=current_user, project=project):   
+        return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)
+    
+    note = Note.query.filter_by(id=int(note_id)).first()
+    
+    if not note:
+        return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)   
+    
+    notification = note.notification
+            
+    if request.method == "GET":
         return render_template("redact_note.html", project=project, user=current_user, subproject=subproject, note=note, notification=notification, get_date=get_date)
     
     elif request.method == "POST":
-
-        project = Project.query.filter_by(id=project_id).first()
-        subproject = SubProject.query.filter_by(id=subproject_id).first()
-        
-        if not has_access_to_project(user=current_user, project=project):
-            return render_template("forbidden.html", user=current_user)
-        
-        note = Note.query.filter_by(id=int(note_id)).first()
-        notification = note.notification
-        
-        if not note:
-            return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
-        
+            
         progress = request.form.get('progress')
         progress_coefficient = request.form.get('progress_coefficient')
         planned_at = request.form.get('planned_at')
@@ -524,12 +597,10 @@ def showStats(index):
                     due_month.append(note)
                          
     tasks_num = tasks_ready + tasks_done + tasks_abandoned + tasks_in_progress
+    
     if request.method == "GET":
         return render_template("show_stats.html", project=project, user=current_user, due_3d = due_3d, due_week=due_week, due_month=due_month, \
             subprojects_num=subprojects_num, tasks_in_progress=tasks_in_progress, tasks_abandoned=tasks_abandoned, tasks_done=tasks_done, tasks_ready=tasks_ready, tasks_num=tasks_num, get_date=get_date)
-    
-        
-    db.session.commit()
     
     return render_template("show_stats.html", project=project, user=current_user)
 
