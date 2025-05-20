@@ -142,6 +142,9 @@ class Note(db.Model):
     def next_status(self):
         statuses = ["ready", "in_progress", "done", "abandoned"]
         self.status = statuses[(statuses.index(self.status) + 1) % 4]
+        
+        if self.status == "done":
+            self.progress = 100
     
 # Описывает сущность комната чата
 class ChatRoom(db.Model):
