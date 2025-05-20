@@ -298,7 +298,6 @@ def manageNote(project_id, subproject_id, note_id):
         
         note = Note.query.filter_by(id=int(note_id)).first()
         notification = note.notification
-        print("NOTIF", notification, file=sys.stdout)
         
         if not note:
             return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject)
