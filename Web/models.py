@@ -133,7 +133,7 @@ class Note(db.Model):
         if chatRoom:
             chatRoom.delete(db)
             
-        notification = self.chatRoom
+        notification = self.notification
         if notification:
             notification.delete(db)
         db.session.delete(self)
