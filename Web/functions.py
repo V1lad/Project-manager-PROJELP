@@ -1,4 +1,5 @@
 from json import loads
+import re
 
 # Возвращает True если у пользователя есть доступ к проекту
 def has_access_to_project(user, project):
@@ -19,3 +20,7 @@ def get_date(time_str):
     # 2025-05-16 --> 16.05.2025
     dates = time_str.split("-")
     return f"{'.'.join(dates[0:3][::-1])}"
+
+# Очистка названия для листа Excel
+def clean_sheet_name(name):
+    return re.sub(r'[\\/*?:[\]]', '', name[:30])
