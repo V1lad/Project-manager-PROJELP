@@ -185,6 +185,17 @@
                     <i class="bi bi-person-circle me-1"></i>
                     Профиль
                 </a>
+                <!-- Администраторская панель -->
+                {% if user.is_admin == "True" %}
+                <a class="nav-item nav-link px-3 py-1 mx-1" href="/admin_projects">
+                    <i class="bi bi-wrench me-1"></i>
+                    Все проекты
+                </a>
+                <a class="nav-item nav-link px-3 py-1 mx-1" href="/admin_users">
+                    <i class="bi bi-wrench me-1"></i>
+                    Просмотр пользователей
+                </a>
+                {% endif %}
                 <a class="nav-item nav-link px-3 py-1 mx-1" href="/projects">
                     <i class="bi bi-folder2-open me-1"></i>
                     Мои проекты
