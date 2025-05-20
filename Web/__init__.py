@@ -34,7 +34,7 @@ with open("web/keys/mail.txt", "r") as file:
 app.config['SQLALCHEMY_DATABASE_URI'] =\
         'sqlite:///' + path.join(basedir, DB_NAME)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['DEBUG'] = False
+app.config['DEBUG'] = True
 
 # Подключаем модели для базы данных
 from .models import User, Notification, Note, SubProject, Project
