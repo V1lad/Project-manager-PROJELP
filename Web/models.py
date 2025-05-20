@@ -58,6 +58,9 @@ class Project(db.Model):
             self.progress = 0
         else:
             self.progress = round(current_progress * 100/max_progress)
+        
+        if self.progress == 100:
+            self.done = "True"
             
         db.session.commit()
         return  
@@ -95,6 +98,9 @@ class SubProject(db.Model):
         else:   
             self.progress = round(current_coef * 100/max_coef)
 
+        if self.progress == 100:
+            self.done = "True"
+            
         db.session.commit()
         return  
 
@@ -145,7 +151,10 @@ class Note(db.Model):
         
         if self.status == "done":
             self.progress = 100
-    
+            project = Project.query.filter_by(id=SubProject.query.filter_by(id=self.parent_id).first().parent_id).first()
+            project.update_progress(db)
+            
+            
     def get_str_status(self):
         if self.status == "ready":
             return "не начата"
