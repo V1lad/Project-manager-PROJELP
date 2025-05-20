@@ -8,10 +8,10 @@
         <h1 class="text-light">{{ project.name }} - Статистика</h1> 
         <div class="btn-group"> 
             <a href="{{ url_for('.showProject', index=project.id) }}" class="btn btn-purple"> <i class="bi bi-arrow-left"></i> Назад </a>
-            <form action = {{ url_for('.exportProjectCSV', project_id=project.id) }} method = "POST">
+            <form action = {{ url_for('.exportProjectExcel', project_id=project.id) }} method = "POST">
                 <button class="btn btn-purple"> <i class="bi bi-file-earmark-excel"></i> Excel </button> 
             </form>
-            <form action = {{ url_for('.exportProjectExcel', project_id=project.id) }} method = "POST">
+            <form action = {{ url_for('.exportProjectCSV', project_id=project.id) }} method = "POST">
                 <button class="btn btn-purple"> <i class="bi bi-filetype-csv"></i> CSV </button> 
             </form>
         </div> 
