@@ -10,6 +10,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(150), unique=True)
     firstName = db.Column(db.String(150), default='')
     password = db.Column(db.String(150))
+    is_admin = db.Column(db.String(150), default='False')
     
     addedProjects = db.Column(db.JSON, default='[]')
 
@@ -61,7 +62,9 @@ class Project(db.Model):
         
         if self.progress == 100:
             self.done = "True"
-            
+        else:
+            self.done = "False"   
+             
         db.session.commit()
         return  
     
@@ -100,7 +103,9 @@ class SubProject(db.Model):
 
         if self.progress == 100:
             self.done = "True"
-            
+        else:
+            self.done = "False"
+                
         db.session.commit()
         return  
 
