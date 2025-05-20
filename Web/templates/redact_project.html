@@ -1,115 +1,155 @@
 {% extends "base.html" %}
 
-{% block title %}Проект{% endblock %}
+{% block title %}Редактирование проекта{% endblock %}
 {% block content %}
 
-<div class="container" id='sign-up-container'>
-<div class="row pt-4 mt-4 mb-4 content-container colorw">
-<div class="col-8 mt-3">
-<form method="POST">
-    <h1> Название проекта:   </h1>
-        <div class="form-group">
-            <textarea  
-                type="text"
-                class="form-control colored_text"
-                id="name"
-                name="name"
-
-                >{{ project.name }}</textarea>
-        </div>
-    <h2> Краткое описание проекта:   </h2>
-        <div class="form-group">
-            <textarea
-                type="text"
-                class="form-control colored_text"
-                id="shortDescription"
-                name="shortDescription"
-                >{{ project.shortDescription }}</textarea>
-        </div>
-    <h2> Описание проекта:   </h2>
-        <div class="form-group">
-            <textarea
-                type="text"
-                class="form-control colored_text"
-                id="fullDescription"
-                name="fullDescription"
-                >{{ project.fullDescription }}</textarea>
-        </div>
-    <h2> Цель проекта:   </h2>
-        <div class="form-group">
-            <textarea
-                type="text"
-                class="form-control colored_text"
-                id="goal"
-                name="goal"
-                >{{ project.goal }}</textarea>
-            </br>
-            <button type="submit" class="btn btn-info">Применить изменения</button>
-        </div>
-    </form>
-    
-
-    <form class = "mt-2" action = {{ url_for('.showProject', index=project.id) }} method = "POST">
-    <input type="hidden" name="project" value="{{ project.id }}" />
-    <button type="submit" class="btn btn-info">Вернутся к проекту</button>
-    <br/>
-    </form>
-</div>
-<div class="col-4 mt-3">
-    <h2> Удаление проекта   </h2>
-    <form method="POST">
-        <div class="form-group">
-            <input
-                type="text"
-                class="form-control colored_text"
-                id="delete"
-                name="delete"
-                placeholder="Введите УДАЛИТЬ чтобы удалить проект"
-                ></input>
-            </br>
-            <button type="submit" class="btn btn-info">Удалить проект</button>
-        </div>
-    </form>
-    <h2> Статус проекта:  {%if project.done == "True" %}выполнен{%else%}активный{%endif%} </h2>
-    <form method = "POST">
-    <input type="hidden" name="done" value="{{ project.id }}" />
-    <button type="submit" class="btn btn-info">Изменить статус проекта</button>
-    <br/>
-    </form>
-    <h2 class="mt-2"> Добавление и удаления соучастников   </h2>
-    <ul class="list-group">
-        <div class="form-group">
-            {% for allowed_user in allowed_users %}
-            <form method="POST">
-                <li class="list-group-item item-standart"> Имя: {{ allowed_user.firstName }} <br/> 
-                    id: {{ allowed_user.id }}
-                    <input
-                        type="hidden"
-                        class="form-control border-0 hidden "
-                        id="to_delete_user_id"
-                        name="to_delete_user_id"
-                        value="{{ allowed_user.id  }}"
-                        ></input>
-                    <button type="submit" class="btn btn-outline-dark btn-sm">
-                    Удалить
-                    </button>
-                </li>
-            </form>
-            {% endfor %}
-    </ul>
-    <form method="POST">
-    <input
-        type="text"
-        class="form-control colored_text"
-        id="user_id"
-        name="user_id"
-        placeholder="Введите ID пользователя"
-        ></input></br>
-    <button type="submit" class="btn btn-info">Добавить</button>
+<div class="container py-5 content-container-extra"> 
+    <div class="d-flex justify-content-between align-items-center mb-4"> 
+    <h1 class="text-light">Редактирование проекта</h1> 
+    <a href="{{ url_for('.showProject', index=project.id) }}" class="btn btn-purple"> 
+        <i class="bi bi-arrow-left"></i> Назад к проекту </a> 
     </div>
-    </form>
+<div class="row g-4">
+    <!-- Основная информация -->
+    <div class="col-12">
+        <div class="card bg-dark-2 text-light">
+            <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-8">
+                            <form method="POST">
+                            <div class="mb-4">
+                                <label class="form-label h5 text-purple">Название проекта</label>
+                                <textarea class="form-control bg-dark-2 text-light" 
+                                         id="name" 
+                                         name="name"
+                                         rows="2">{{ project.name }}</textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label h5 text-purple">Краткое описание</label>
+                                <textarea class="form-control bg-dark-2 text-light" 
+                                         id="shortDescription" 
+                                         name="shortDescription"
+                                         rows="3">{{ project.shortDescription }}</textarea>
+                            </div>
+         
+                            <div class="mb-4">
+                                <label class="form-label h5 text-purple">Полное описание</label>
+                                <textarea class="form-control bg-dark-2 text-light" 
+                                         id="fullDescription" 
+                                         name="fullDescription"
+                                         rows="5">{{ project.fullDescription }}</textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label h5 text-purple">Цель проекта</label>
+                                <textarea class="form-control bg-dark-2 text-light" 
+                                         id="goal" 
+                                         name="goal"
+                                         rows="3">{{ project.goal }}</textarea>
+                            </div>
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" name="save_button" class="btn btn-purple">
+                                    <i class="bi bi-save"></i> Сохранить изменения
+                                </button>
+                            </div>
+                            </form>
+                        </div>
+                        <div class="col-md-4">
+                            <div class=" card bg-dark-2 text-light h-20">
+                                <div class="card-body">
+                                    <h5 class="text-purple mb-4">Состояние проекта</h5>              
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="badge bg-{% if project.done == 'True' %}success{% else %}primary{% endif %} me-3 fs-6">
+                                            {% if project.done == "True" %}Завершён{% else %}Активен{% endif %}
+                                        </div>
+                                        <form method="POST" class="w-100">
+                                            <input type="hidden" name="done" value="{{ project.id }}" />
+                                            <button type="submit" class="btn btn-outline-purple w-100">
+                                                Переключить статус
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <form method="POST">
+                                        <div class="mb-3">
+                                            <input type="text" 
+                                                class="form-control bg-dark-2 text-light" 
+                                                id="delete" 
+                                                name="delete"
+                                                placeholder="Введите УДАЛИТЬ">
+                                        </div>
+                                        <button type="submit" class="btn btn-outline-danger w-100">
+                                            <i class="bi bi-trash"></i> Удалить проект
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статус и удаление -->
+
 </div>
 
+<!-- Управление доступом (полноразмерный блок) -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-dark-2 text-light">
+            <div class="card-body">
+                <h3 class="text-purple mb-4"><i class="bi bi-people-fill"></i> Управление доступом</h3>
+                
+                <!-- Список пользователей -->
+                <div class="row g-3 mb-4">
+                    {% for allowed_user in allowed_users %}
+                    <div class="col-md-12">
+                        <div class="d-flex align-items-center bg-dark p-3 rounded-3">
+                            <div class="flex-grow-1">
+                                <div class="text-light fs-5">{{ allowed_user[0].firstName }}</div>
+                                <small class="text-muted">ID: {{ allowed_user[0].id }}</small>
+                            </div>
+                            <div class="btn-group ms-3">
+                                <form method="POST" class="me-2">
+                                    <input type="hidden" name="toggle_access" value="{{ allowed_user[0].id }}" />
+                                    <button type="submit" class="btn {% if allowed_user[1]  %}btn-purple{% else %}btn-outline-purple{% endif %} ">
+                                        {% if allowed_user[1]  %}
+                                            <i class="bi bi-shield-check"></i> Полный доступ
+                                        {% else %}
+                                            <i class="bi bi-shield-lock"></i> Только чтение
+                                        {% endif %}
+                                    </button>
+                                </form>
+                                <form method="POST" >
+                                    <input type="hidden" name="to_delete_user_id" value="{{ allowed_user[0].id }}" />
+                                    <button type="submit" class="btn btn-danger ">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
 
-
+                <!-- Добавление пользователя -->
+                <form method="POST">
+                    <div class="input-group">
+                        <input type="text" 
+                               class="form-control bg-dark-2 text-light" 
+                               id="user_id" 
+                               name="user_id"
+                               placeholder="Введите ID пользователя">
+                        <button type="submit" class="btn btn-purple">
+                            <i class="bi"></i> Добавить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div><style> .text-purple { color: #9d7fe8 !important; } .btn-outline-purple { border-color: #6f42c1; color: #9d7fe8; } .btn-outline-purple:hover { background-color: #6f42c1; color: white; } .rounded-3 { border-radius: 1rem !important; } </style>
 {% endblock %}
