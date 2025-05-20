@@ -146,6 +146,16 @@ class Note(db.Model):
         if self.status == "done":
             self.progress = 100
     
+    def get_str_status(self):
+        if self.status == "ready":
+            return "не начата"
+        elif self.status == "in_progress":
+            return "в работе"
+        elif self.status == "done":
+            return "выполнена"
+        else:
+            return "отложена"
+        
 # Описывает сущность комната чата
 class ChatRoom(db.Model):
     __tablename__ = 'chatrooms'
