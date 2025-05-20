@@ -1,10 +1,14 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, send_file, Response
 from . import db
 from flask_login import login_required, current_user
 from .models import Project, User, SubProject, Note, ChatRoom, Message, Notification
-from .functions import has_access_to_project, get_time, get_date
+from .functions import has_access_to_project, get_time, get_date, clean_sheet_name
 from datetime import datetime, date, timedelta
 import json
+import csv
+from io import BytesIO, TextIOWrapper 
+from openpyxl import Workbook
+from openpyxl.styles import Font
 
 ### ВРЕМЕННОЕ
 import sys
@@ -217,6 +221,7 @@ def showSubProject(index, subproject):
         if 'create_note' in request.form:
             note = Note(parent_id=subproject.id, title=create_note, status="ready")
             db.session.add(note)
+            project.update_progress(db)   
             db.session.commit()
             return render_template("show_subproject.html", project=project, user=current_user, subproject=subproject, get_date=get_date)
         
@@ -505,7 +510,7 @@ def showStats(index):
                 tasks_done += 1
             elif note.status == "abandoned":
                 tasks_abandoned += 1
-            if note.planned_at:
+            if note.planned_at and note.status != 'done':
                 planned_time = date(*[int(i) for i in note.planned_at.split("-")])
                 current_time = date.today()     
                 timedelta = planned_time - current_time
@@ -527,3 +532,140 @@ def showStats(index):
     db.session.commit()
     
     return render_template("show_stats.html", project=project, user=current_user)
+
+# Экспортирует проект
+@projects.route('/projects/<int:project_id>/export_csv', methods=["POST"])
+@login_required
+def exportProjectCSV(project_id):
+    # Получаем проект и его подпроекты
+    project = Project.query.filter_by(id=project_id).first()
+    # В случае некорректной информации останавливаем выполнение
+    if not project:
+        return redirect(url_for('projects.allProjects'))
+    
+    subprojects = project.subprojects
+
+    # Создаем CSV в памяти
+    csv_buffer = BytesIO()
+    csv_buffer.write(b'\xef\xbb\xbf')
+    
+    # Оборачиваем BytesIO в TextIOWrapper с указанием кодировки
+    text_buffer = TextIOWrapper(
+        csv_buffer,
+        encoding='utf-8',
+        write_through=True  # Автоматическая запись данных в BytesIO
+    )
+    
+    writer = csv.writer(text_buffer, lineterminator = '\n')
+        
+    # Заголовки CSV
+    writer.writerow([
+        'Project ID', 
+        'Project Name', 
+        'Full Description', 
+        'Parent Project ID'
+    ])
+    
+    # Данные основного проекта
+    writer.writerow([
+        project.id,
+        project.name,
+        project.fullDescription,
+        ''  # У основного проекта нет родителя
+    ])
+    
+    # Данные подпроектов
+    for sub in subprojects:
+        writer.writerow([
+            sub.id,
+            sub.name,
+            sub.shortDescription,
+            sub.parent_id
+        ])
+    
+    # Критически важные действия:
+    text_buffer.flush()  # Форсируем запись всех данных
+    csv_buffer = text_buffer.detach()  # Отсоединяем BytesIO от TextIOWrapper
+    csv_buffer.seek(0)  # Перемещаем указатель в начало
+       
+    return Response(
+        csv_buffer,
+        mimetype="text/csv",
+        headers={"Content-disposition":
+                 "attachment; filename=project_data.csv"})
+
+
+# Экспортирует проект
+@projects.route('/projects/<int:project_id>/export_excel', methods=["POST"])
+@login_required
+def exportProjectExcel(project_id):
+    # Получаем проект и его подпроекты
+    project = Project.query.filter_by(id=project_id).first()
+    # В случае некорректной информации останавливаем выполнение
+    if not project:
+        return redirect(url_for('projects.allProjects'))
+    
+    subprojects = project.subprojects
+    
+    # Создаем книгу Excel
+    wb = Workbook()
+    wb.remove(wb.active)  # Удаляем дефолтный лист
+
+    # Лист основного проекта
+    main_ws = wb.create_sheet(title=clean_sheet_name(project.name))
+    main_ws.append(['ID', 'Project Name', 'Description'])
+    main_ws.append([project.id, project.name, project.fullDescription])
+    
+    # Форматирование заголовков
+    bold_font = Font(bold=True)
+    for row in main_ws.iter_rows(max_row=1):
+        for cell in row:
+            cell.font = bold_font
+
+    # Листы для подпроектов
+    for sub in subprojects:
+        sheet_name = clean_sheet_name(f"Sub: {sub.name}")
+        sub_ws = wb.create_sheet(title=sheet_name)
+        
+        # Заголовки подпроекта
+        sub_ws.append(['Subproject ID', 'Name', 'Description'])
+        sub_ws.append([sub.id, sub.name, sub.shortDescription])
+        
+        # Задачи подпроекта
+        sub_ws.append([])  # Пустая строка
+        sub_ws.append(['Tasks'])
+        sub_ws.append(['Task ID', 'Name', 'Description', 'Status'])
+        
+        tasks = Note.query.filter_by(parent_id=sub.id).all()
+        for task in tasks:
+            sub_ws.append([task.id, task.title, task.content, task.status])
+        
+        # Форматирование и автоподбор ширины
+        for column in sub_ws.columns:
+            max_length = 0
+            column = [cell for cell in column]
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(cell.value)
+                except:
+                    pass
+            adjusted_width = (max_length + 2)
+            sub_ws.column_dimensions[column[0].column_letter].width = adjusted_width
+        
+        # Жирный шрифт для заголовков
+        for row in sub_ws.iter_rows(max_row=3):
+            for cell in row:
+                cell.font = bold_font
+
+    # Сохраняем в буфер
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=f'project_{project_id}_export.xlsx'
+    )
