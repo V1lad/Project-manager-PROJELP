@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Управление пользователями{% endblock %}
+{% block content %}
+
+<div class="container py-5 content-container-extra">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-light"><i class="bi bi-people-fill me-3"></i>Управление пользователями</h1>
+    </div>
+
+    <div class="row g-4">
+        {% for user in users %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card bg-dark-2 text-light {% if user.is_admin == "True" %}admin-glow{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <!-- Аватар пользователя -->
+                        <div class="me-3">
+                            <div class="avatar-placeholder bg-purple rounded-circle d-flex align-items-center justify-content-center" 
+                                 style="width: 50px; height: 50px">
+                                <i class="bi bi-person fs-4"></i>
+                            </div>
+                        </div>
+
+                        <!-- Информация о пользователе -->
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1 text-purple">{{ user.firstName }}</h5>
+                            <div class="text-muted small">
+                                <div>ID: {{ user.id }}</div>
+                                <div>Email: {{ user.email }}</div>
+                                <div class="d-flex align-items-center">
+                                    Роль: 
+                                    <form method="POST" class="ms-2">
+                                        <input type="hidden" name="user_id" value="{{ user.id }}">
+                                        <button type="submit" name="role_button"
+                                                class="btn btn-sm {% if user.is_admin == "True" %}btn-outline-warning{% else %}btn-outline-purple{% endif %}">
+                                            {% if user.is_admin== "True" %}
+                                                <i class="bi bi-shield-fill-check"></i> Администратор
+                                            {% else %}
+                                                <i class="bi bi-person"></i> Пользователь
+                                            {% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="mt-1">Зарегистирован: {{ "user.registration_date" }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопка удаления -->
+                        <form method="POST" class="ms-2">
+                            <input type="hidden" name="user_id" value="{{ user.id }}">
+                            <button type="submit" name="delete_button" class="btn btn-danger btn-sm">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .avatar-placeholder {
+        background: rgba(111, 66, 193, 0.2);
+        transition: transform 0.2s;
+    }
+    .avatar-placeholder:hover {
+        transform: scale(1.05);
+    }
+    .text-purple {
+        color: #9d7fe8 !important;
+    }
+    .card:hover {
+        transform: translateY(-3px);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+    .admin-glow {
+        box-shadow: 0 0 15px rgba(255, 193, 7, 0.3);
+        border: 1px solid rgba(255, 193, 7, 0.15);
+    }
+    .btn-warning {
+        background-color: #ffc107 !important;
+        border-color: #ffc107 !important;
+        color: #000 !important;
+    }
+    .btn-outline-purple {
+        border-color: #6f42c1 !important;
+        color: #9d7fe8 !important;
+    }
+    .btn-outline-purple:hover {
+        background-color: #6f42c1 !important;
+        color: white !important;
+    }
+</style>
+
+{% endblock %}
