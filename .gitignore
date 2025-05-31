@@ -1,3 +1,5 @@
 *.db
 web/__pycache__
 *.txt
+/__pycache__
+/projelp-env
