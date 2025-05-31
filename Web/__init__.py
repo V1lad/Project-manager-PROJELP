@@ -19,10 +19,10 @@ basedir = path.abspath(path.dirname(__file__))
         
 app = Flask(__name__)    
 # Конфигурируем базу данных
-with open("web/keys/secret_key.txt", "r") as file:
+with open("Web/keys/secret_key.txt", "r") as file:
     app.config['SECRET_KEY'] = file.readline()
     
-with open("web/keys/mail.txt", "r") as file:
+with open("Web/keys/mail.txt", "r") as file:
     app.config['MAIL_SERVER'] = 'smtp.mail.ru'
     app.config['MAIL_PORT'] = 465
     app.config['MAIL_USE_SSL'] = True
