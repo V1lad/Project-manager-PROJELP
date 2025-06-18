@@ -1,61 +1,112 @@
 {% extends "base.html" %}
 
-{% block title %}Проект{% endblock %}
+{% block title %}Редактирование раздела{% endblock %}
 {% block content %}
 
-<div class="container" id='sign-up-container'>
-<div class="row pt-4 mt-4 content-container">
-<div class="col-8 colorw">
-    <form method="POST">
-    <h1> Название раздела:   </h1>
-        <div class="form-group">
-            <textarea
-                type="text"
-                class="form-control colored_text"
-                id="name"
-                name="name"
-                >{{ subproject.name }}</textarea>
-        </div>
-    <h2> Краткое описание раздела:   </h2>
-        <div class="form-group">
-            <textarea
-                type="text"
-                class="form-control colored_text"
-                id="description"
-                name="description"
-                >{{ subproject.shortDescription }}</textarea>
-            </br>
-            <button type="submit" class="btn btn-info">Применить изменения</button>
-        </div>
-    </form>
+<div class="container py-5 content-container-extra">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-light">{{ subproject.name }}</h1>
+        <form action="{{ url_for('.showProject', index=project.id) }}" method="POST">
+            <input type="hidden" name="project" value="{{ project.id }}" />
+            <button type="submit" class="btn btn-purple">
+                <i class="bi bi-arrow-left"></i> Вернуться к проекту
+            </button>
+        </form>
+    </div>
 
-    <form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
-    <input type="hidden" name="project" value="{{ project.id }}" />
-    <button type="submit" class="btn btn-info">Вернутся к проекту</button>
-    <br/>
-    </form>
-</div>
-<div class="col-4">
-    <h2 class = "colorw"> Удаление раздела   </h2>
-    <form method="POST">
-        <div class="form-group">
-            <input
-                type="text"
-                class="form-control"
-                id="delete"
-                name="delete"
-                placeholder="Введите УДАЛИТЬ чтобы удалить раздел"
-                ></input>
-            </br>
-            <button type="submit" class="btn btn-info">Удалить раздел</button>
+    <div class="row g-4">
+        <!-- Основная информация -->
+        <div class="col-md-8">
+            <div class="card bg-dark-2 text-light">
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label class="form-label h5 text-purple">
+                                <i class="bi bi-card-heading me-2"></i>Название раздела
+                            </label>
+                            <textarea class="form-control bg-dark-2 text-light" 
+                                      id="name" 
+                                      name="name"
+                                      rows="2">{{ subproject.name }}</textarea>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label h5 text-purple">
+                                <i class="bi bi-text-paragraph me-2"></i>Краткое описание
+                            </label>
+                            <textarea class="form-control bg-dark-2 text-light" 
+                                      id="description" 
+                                      name="description"
+                                      rows="4">{{ subproject.shortDescription }}</textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-purple">
+                                <i class="bi bi-save me-2"></i> Применить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-    </form>
-    <h2 class = "colorw"> Статус раздела:  {%if subproject.done == "True" %}<b>выполнен{%else%}<b>активный{%endif%} </h2>
-    <form method = "POST">
-    <input type="hidden" name="done" value="{{ subproject.id }}" />
-    <button type="submit" class="btn btn-info">Изменить статус раздела</button>
-    <br/>
-    </form>
+
+        <!-- Управление разделом -->
+        <div class="col-md-4">
+            <!-- Статус раздела -->
+            <div class="card bg-dark-2 text-light mb-4">
+                <div class="card-body">
+                    <h5 class="text-purple mb-3">Статус раздела</h5>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="badge bg-{% if subproject.done == 'True' %}success{% else %}primary{% endif %} me-3">
+                            {% if subproject.done == "True" %}Завершён{% else %}Активен{% endif %}
+                        </div>
+                        <form method="POST" class="ms-auto">
+                            <input type="hidden" name="done" value="{{ subproject.id }}" />
+                            <button type="submit" class="btn btn-outline-purple">
+                                Изменить статус
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Удаление раздела -->
+            <div class="card bg-dark-2 text-light">
+                <div class="card-body">
+                    <h5 class="text-purple mb-3">Удаление раздела</h5>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <input type="text" 
+                                   class="form-control bg-dark-2 text-light" 
+                                   id="delete" 
+                                   name="delete"
+                                   placeholder="Введите УДАЛИТЬ">
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="bi bi-trash me-2"></i> Удалить раздел
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .text-purple {
+        color: #9d7fe8 !important;
+    }
+    .bg-dark-2 {
+        background-color: #1a1a2e;
+    }
+    .btn-outline-purple {
+        border-color: #6f42c1;
+        color: #9d7fe8;
+    }
+    .btn-outline-purple:hover {
+        background-color: #6f42c1;
+        color: white;
+    }
+</style>
 
 {% endblock %}

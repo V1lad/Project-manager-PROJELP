@@ -3,53 +3,106 @@
 {% block title %}Регистрация{% endblock %}
 {% block content %}
 
-<div class="container" id='sign-up-container'>
-<div class="row pt-4 mt-4 mb-2">
-    <div class="col-4">
-    </div>
-    <div class="col-4 content-container colorw">
-        <form method="POST">
-            <h3 align="center">Регистрация</h3>
-            <div class="form-group">
-                <label for = "email">Почтовый адрес</label>
-                <input
-                    type="email"
-                    class="form-control colored_text"
-                    id="email"
-                    name="email"
-                    placeholder="Введите почтовый адрес"
-                    />
-                </br>
-                <label for = "firstName">Имя</label>
-                <input
-                    type="firstName"
-                    class="form-control colored_text"
-                    id="firstName"
-                    name="firstName"
-                    placeholder="Введите имя"
-                    />
-                </br>
-                <label for = "password1">Пароль</label>
-                <input
-                    type="password"
-                    class="form-control colored_text"
-                    id="password1"
-                    name="password1"
-                    placeholder="Введите пароль с длиной более 6 символов"
-                    />
-                </br>
-                <label for = "password2">Подтверждение пароля</label>
-                <input
-                    type="password"
-                    class="form-control colored_text" 
-                    id="password2"
-                    name="password2"
-                    placeholder="Повторно введите пароль"
-                    />
-                <div style="text-align: center; "><button type="submit"  class="btn btn-info mt-4">Создать</button></div>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card bg-dark-2 text-light">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="bi bi-person-plus fs-1 text-purple me-3"></i>
+                        <h3 class="text-light mb-0">Регистрация аккаунта</h3>
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label class="form-label h5 text-light">
+                                <i class="bi bi-envelope me-2 text-purple"></i>Почтовый адрес
+                            </label>
+                            <input type="email"
+                                   class="form-control bg-dark-2 text-light"
+                                   id="email"
+                                   name="email"
+                                   placeholder="Введите почтовый адрес"
+                                   required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label h5 text-light">
+                                <i class="bi bi-person-circle me-2 text-purple"></i>Имя
+                            </label>
+                            <input type="text"
+                                   class="form-control bg-dark-2 text-light"
+                                   id="firstName"
+                                   name="firstName"
+                                   placeholder="Введите ваше имя"
+                                   required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label h5 text-light">
+                                <i class="bi bi-lock me-2 text-purple"></i>Пароль
+                            </label>
+                            <input type="password"
+                                   class="form-control bg-dark-2 text-light"
+                                   id="password1"
+                                   name="password1"
+                                   placeholder="Придумайте пароль (более 6 символов)"
+                                   required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label h5 text-light">
+                                <i class="bi bi-shield-lock me-2 text-purple"></i>Подтверждение пароля
+                            </label>
+                            <input type="password"
+                                   class="form-control bg-dark-2 text-light"
+                                   id="password2"
+                                   name="password2"
+                                   placeholder="Повторите ваш пароль"
+                                   required>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-purple btn-lg">
+                                <i class="bi bi-person-plus me-2"></i>Создать аккаунт
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
+
+<style>
+    .card {
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .bg-dark-2 {
+        background-color: #1a1a2e !important;
+    }
+    .text-purple {
+        color: #9d7fe8 !important;
+    }
+    .form-control {
+        border: 1px solid rgba(111, 66, 193, 0.3);
+        background-color: #16213e !important;
+    }
+    .form-control:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+    }
+    .btn-purple {
+        background-color: #6f42c1;
+        border-color: #6f42c1;
+        color: white;
+    }
+    .btn-purple:hover {
+        background-color: #5a32a3;
+        border-color: #5a32a3;
+    }
+</style>
 
 {% endblock %}

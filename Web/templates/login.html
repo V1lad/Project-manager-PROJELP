@@ -3,33 +3,81 @@
 {% block title %}Вход{% endblock %}
 {% block content %}
 
-<div class="container" id='log-in-container'>
-<div class="row pt-4 mt-5 mb-4">
-<div class="col-4">
-</div>
-<div class="col-4 content-container colorw">
-    <h3 align="center">Вход в аккаунт</h3>
-    <form method="POST">
-    <div class="form-group">
-        <label for = "email">Почтовый адрес</label>
-        <input
-            type="email"
-            class="form-control colored_text"
-            id="email"
-            name="email"
-            placeholder="Введите почтовый адрес"
-            />
-        </br>
-        <label for = "password">Пароль</label>
-        <input
-            type="password"
-            class="form-control colored_text"
-            id="password"
-            name="password"
-            placeholder="Введите пароль"
-            />
-        <button type="submit" class="btn btn-info mt-3">Войти</button>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card bg-dark-2 text-light">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <h3 class="text-light mb-0">Вход в аккаунт</h3>
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label class="form-label h5 text-light">
+                                <i class="bi bi-envelope me-2 text-purple"></i>Почтовый адрес
+                            </label>
+                            <input type="email"
+                                   class="form-control bg-dark-2 text-light"
+                                   id="email"
+                                   name="email"
+                                   placeholder="Введите почтовый адрес"
+                                   required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label h5 text-light">
+                                <i class="bi bi-lock me-2 text-purple"></i>Пароль
+                            </label>
+                            <input type="password"
+                                   class="form-control bg-dark-2 text-light"
+                                   id="password"
+                                   name="password"
+                                   placeholder="Введите пароль"
+                                   required>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-purple btn-lg">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Войти
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    .card {
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .bg-dark-2 {
+        background-color: #1a1a2e !important;
+    }
+    .text-purple {
+        color: #9d7fe8 !important;
+    }
+    .form-control {
+        border: 1px solid rgba(111, 66, 193, 0.3);
+        background-color: #16213e !important;
+    }
+    .form-control:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+    }
+    .btn-purple {
+        background-color: #6f42c1;
+        border-color: #6f42c1;
+        color: white;
+    }
+    .btn-purple:hover {
+        background-color: #5a32a3;
+        border-color: #5a32a3;
+    }
+</style>
 
 {% endblock %}

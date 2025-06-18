@@ -3,11 +3,99 @@
 {% block title %}Личный кабинет{% endblock %}
 {% block content %}
 
-<div class="mt-5 content-container colorw">
-    <h3 align="center">
-    Логин - {{ user.email }}</h31>
-    <h3 align="center"> Имя аккаунта - {{ user.firstName }} </h3>
-    <h3 align="center"> Id пользователя - {{ user.id }} </h3>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 content-container-extra">
+            <div class="card bg-dark-2 text-light">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-placeholder bg-purple rounded-circle d-flex align-items-center justify-content-center me-3" 
+                             style="width: 50px; height: 50px">
+                            <i class="bi bi-person fs-3"></i>
+                        </div>
+                        <div>
+                            <h3 class="mb-0">Личный кабинет</h3>
+                            <small class="text-muted">Ваша персональная информация</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Основная информация в столбик -->
+                    <div class="info-section mb-4">
+                        <h5 class="text-purple mb-3"><i class="bi bi-person-badge me-2"></i>Основная информация</h5>
+                        <div class="info-item">
+                            <span class="label">Имя аккаунта:</span>
+                            <span class="value">{{ user.firstName }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Email:</span>
+                            <span class="value">{{ user.email }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Идентификация в столбик -->
+                    <div class="info-section mb-4">
+                        <h5 class="text-purple mb-3"><i class="bi bi-shield-lock me-2"></i>Идентификация</h5>
+                        <div class="info-item">
+                            <span class="label">ID пользователя:</span>
+                            <span class="value">{{ user.id }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Дата регистрации:</span>
+                            <span class="value">{{ get_date(current_user.registraion_date) }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Статистика в столбик -->
+                    <div class="info-section">
+                        <h5 class="text-purple mb-3"><i class="bi bi-graph-up me-2"></i>Статистика</h5>
+                        <div class="info-item">
+                            <span class="label">Созданные проекты:</span>
+                            <span class="value">{{ user.ownedProjects | length}}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Участие в проектах:</span>
+                            <span class="value">{{ "0" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .avatar-placeholder {
+        background: rgba(111, 66, 193, 0.2);
+    }
+    .text-purple {
+        color: #9d7fe8 !important;
+    }
+    .info-section {
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 1rem;
+    }
+    .info-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .info-item {
+        display: flex;
+        margin: 0.8rem 0;
+        padding: 0.5rem;
+        background: rgba(255,255,255,0.03);
+        border-radius: 6px;
+    }
+    .label {
+        font-weight: 500;
+        color: #9d7fe8;
+        min-width: 180px;
+    }
+    .value {
+        color: #e0d6ff;
+        font-weight: 400;
+    }
+</style>
 
 {% endblock %}

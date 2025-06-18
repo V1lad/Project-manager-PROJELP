@@ -104,7 +104,7 @@ with app.app_context():
     # Создаём администратора 
     if not User.query.filter_by(id=1).first():
         with open("web/keys/admin_password.txt", "r") as file:
-            admin = User(email="vlad@mail.ru", firstName="Vlad", password=file.readline(), is_admin="True") 
+            admin = User(email="vlad@mail.ru", firstName="Vlad", password=file.readline(), is_admin="True", registration_date=date.today()) 
             db.session.add(admin)
             db.session.commit()
 

@@ -3,35 +3,72 @@
 {% block title %}Новый проект{% endblock %}
 {% block content %}
 
-<div class="container" id='new-project'>
-<div class="row pt-4 mt-4 mb-4">
-<div class="col-3">
-</div>
-<div class="col-5 content-container colorw">
-    <form method="POST">
-        <h3 align="center">Создание нового проекта</h3>
-        <div class="form-group">
-            <label for = "name">Название проекта</label>
-            <input
-                type="text"
-                class="form-control colored_text"
-                id="name"
-                name="name"
-                placeholder="Введите название проекта"
-                />
-            </br>
-            <label for = "shortDescription">Краткое описание проекта</label>
-            <input
-                type="text"
-                class="form-control colored_text"
-                id="shortDescription"
-                name="shortDescription"
-                placeholder="Введите краткое описание проекта"
-                />
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6"> <!-- Уменьшенная ширина контейнера -->
+            <div class="card bg-dark-2 text-light">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="bi bi-folder-plus fs-1 text-purple me-3"></i>
+                        <h3 class="text-light mb-0">Создание нового проекта</h3> <!-- Белый текст, без фона -->
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label class="form-label h5 text-light">
+                                <i class="bi bi-card-heading me-2 text-purple"></i>Название проекта
+                            </label>
+                            <input type="text"
+                                   class="form-control bg-dark-2 text-light"
+                                   id="name"
+                                   name="name"
+                                   placeholder="Введите название проекта"
+                                   required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label h5 text-light">
+                                <i class="bi bi-text-paragraph me-2 text-purple"></i>Краткое описание
+                            </label>
+                            <textarea class="form-control bg-dark-2 text-light"
+                                      id="shortDescription"
+                                      name="shortDescription"
+                                      rows="3"
+                                      placeholder="Кратко опишите ваш проект"
+                                      required></textarea>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-purple btn-lg">
+                                <i class="bi bi-plus-circle me-2"></i>Создать проект
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <br />
-        <button type="submit" class="btn btn-info">Создать</button>
-    </form>
+    </div>
 </div>
+
+<style>
+    .card {
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .bg-dark-2 {
+        background-color: #1a1a2e !important;
+    }
+    .text-purple {
+        color: #9d7fe8 !important;
+    }
+    .form-control {
+        border: 1px solid rgba(111, 66, 193, 0.3);
+    }
+    .form-control:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+    }
+</style>
 
 {% endblock %}

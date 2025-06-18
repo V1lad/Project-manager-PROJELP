@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from .models import User
 from . import db
 from flask_login import login_user, login_required, logout_user, current_user
-
+from datetime import date
 auth = Blueprint('auth', __name__)
 
 # Отвечает за вход в аккаунт
@@ -15,7 +15,6 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user:
             if user.password == password:
-                flash('Вы успешно вошли в аккаунт', category='success')
                 login_user(user, remember=True)
                 return redirect(url_for('views.home'))
             else:
@@ -54,7 +53,7 @@ def sign_up():
         elif len(password1) < 7:
             flash("Пароль должен быть длиннее 7 символов", category="error")
         else:
-            new_user = User(email=email, firstName=firstName, password=password1)
+            new_user = User(email=email, firstName=firstName, password=password1, registraion_date=str(date.today()))
 
             db.session.add(new_user)
             db.session.commit()

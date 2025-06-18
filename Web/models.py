@@ -5,12 +5,13 @@ import sys
 # Описывает сущность пользователь
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
-
+ 
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    email = db.Column(db.String(150), unique=True)
-    firstName = db.Column(db.String(150), default='')
-    password = db.Column(db.String(150))
+    email = db.Column(db.String(100), unique=True)
+    firstName = db.Column(db.String(30), default='')
+    password = db.Column(db.String(5))
     is_admin = db.Column(db.String(150), default='False')
+    registraion_date = db.Column(db.String(10), default='')
     
     addedProjects = db.Column(db.JSON, default='[]')
 
@@ -24,11 +25,11 @@ class Project(db.Model):
     
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     
-    name = db.Column(db.String(150), default='')
-    shortDescription = db.Column(db.String(255), default='')
-    fullDescription = db.Column(db.String(255), default='')
+    name = db.Column(db.String(200), default='')
+    shortDescription = db.Column(db.String(300), default='')
+    fullDescription = db.Column(db.String, default='')
     goal = db.Column(db.String(255), default='')
-    done = db.Column(db.String, default="False")
+    done = db.Column(db.String(5), default="False")
     progress = db.Column(db.Integer, default=0)
     
     chatRoom = db.relationship('ChatRoom', uselist=False)
@@ -76,8 +77,8 @@ class SubProject(db.Model):
     
     parent_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
     
-    name = db.Column(db.String(150), default='')
-    shortDescription = db.Column(db.String(255), default='')
+    name = db.Column(db.String(200), default='')
+    shortDescription = db.Column(db.String(300), default='')
     done = db.Column(db.String, default="False")
     progress = db.Column(db.Integer, default=0)
         
@@ -124,7 +125,7 @@ class Note(db.Model):
     
     parent_id = db.Column(db.Integer, db.ForeignKey('subprojects.id'))
     
-    planned_at = db.Column(db.String(31), default="")
+    planned_at = db.Column(db.String(10), default="")
     
     # done ready abandoned in_progress
     title = db.Column(db.String, default='')
@@ -178,7 +179,6 @@ class ChatRoom(db.Model):
     
     parent_project_id = db.Column(db.Integer, db.ForeignKey('projects.id'))
     parent_note_id = db.Column(db.Integer, db.ForeignKey('notes.id'))
-    type = db.Column(db.String, default='ProjectChat')
         
     messages = db.relationship('Message')
 
@@ -194,11 +194,11 @@ class Message(db.Model):
     __tablename__ = 'messages'
 
     id = db.Column(db.Integer, primary_key=True, unique=True)
-    text = db.Column(db.String(255), default='')
+    text = db.Column(db.String, default='')
     
-    created_at = db.Column(db.String(31))
+    created_at = db.Column(db.String(20))
     author_id = db.Column(db.Integer)
-    author_name = db.Column(db.String(150))
+    author_name = db.Column(db.String(30))
     
     parent_id = db.Column(db.Integer, db.ForeignKey('chatrooms.id'))
     
@@ -213,7 +213,7 @@ class Notification(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, unique=True)
     
-    planned_at = db.Column(db.String)
+    planned_at = db.Column(db.String(10), default="")
     
     parent_id = db.Column(db.Integer, db.ForeignKey('notes.id'))
     

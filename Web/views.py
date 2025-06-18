@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from . import db
+from .functions import get_date
 
 views = Blueprint('views', __name__)
 
@@ -13,4 +14,4 @@ def main_():
 @views.route('/home')
 @login_required
 def home():
-    return render_template("home.html", user=current_user, db=db)
+    return render_template("home.html", user=current_user, db=db, get_date=get_date)

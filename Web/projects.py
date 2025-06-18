@@ -19,13 +19,79 @@ DB_MAX_INT = 10000000000000000
 projects = Blueprint('projects', __name__)
 
 # Показывает все ваши проекты
-@projects.route('/projects', methods=["GET"])
+@projects.route('/projects', methods=["GET", "POST"])
 @login_required
 def allProjects():
     
     projects = current_user.ownedProjects
     
-    return render_template("projects.html", user=current_user, available_projects = projects)
+    # Загружаем из БД уже добавленные пользователем проекты
+    added_projects = json.loads(current_user.addedProjects)
+    saved_projects = [Project.query.filter_by(id=int(i)).first() for i in added_projects]
+    
+    if request.method == "POST":
+        # Получаем значвения ID проекта из форм страницы
+        delete_project_id = request.form.get('delete_project_id')
+        add_project_id = request.form.get('add_project')
+        
+        # Если добавляем проект
+        if add_project_id:
+            # Проверяем на корректный ввод числа
+            try:
+                int_add_project_id = int(add_project_id)
+            except ValueError:
+                # Иначе выводим ошибку и возвращаем страницу без изменений
+                flash('Введён некорректный идентификтор')
+                return render_template("projects.html", user=current_user, available_other_projects = saved_projects, available_projects = projects, has_access=has_redact_rights_to_project)
+            
+            # Проверяем на переполнение целого числа в БД
+            if int_add_project_id >= DB_MAX_INT:
+                flash('Слишком большой номер проекта')
+                return render_template("projects.html", user=current_user, available_other_projects = saved_projects, available_projects = projects, has_access=has_redact_rights_to_project)
+            
+            # Введённые данные корректны, пытаемся запросить нужный проект
+            project = Project.query.filter_by(id=int(int_add_project_id)).first()
+            if not project:
+                flash('Проекта с таким ID не существует')
+                
+            # Проект существует, проверяем есть ли доступ
+            elif has_access_to_project(user=current_user, project=project):
+                if  project.owner_id == current_user.id:
+                    flash('Вы владелец этого проекта')
+                elif add_project_id in added_projects:
+                    flash('Вы уже сохранили данный проект')
+                else:
+                    # Долбавляем проект в сохранённые у пользователя
+                    added_projects.append(add_project_id)
+                    saved_projects.append(project)
+            else:
+                flash('Доступ к запрашиваемому проекту запрещён')
+                
+        # Удаление проекта из добавленных           
+        elif delete_project_id:
+            if delete_project_id in added_projects:
+                # Проверяем на корректный ввод числа
+                try:
+                    int_delete_project_id = int(delete_project_id)
+                except ValueError:
+                    flash('Введён некорректный идентификтор')
+                    return render_template("projects.html", user=current_user, available_other_projects = saved_projects, available_projects = projects, has_access=has_redact_rights_to_project)
+                if int_delete_project_id >= DB_MAX_INT:
+                    flash('Слишком большой номер проекта')
+                    return render_template("projects.html", user=current_user, available_other_projects = saved_projects, available_projects = projects, has_access=has_redact_rights_to_project)
+                
+                # Введённые данные корректны, удаляем введённый проект
+                project = Project.query.filter_by(id=int_delete_project_id).first()
+                added_projects.remove(delete_project_id)
+                saved_projects.remove(project)
+        
+        # Сохраняем проект в поля пользователя  
+        current_user.addedProjects = json.dumps(added_projects)
+        # Сохраняем изменения в БД
+        db.session.commit()
+        return render_template("projects.html", user=current_user, available_other_projects = saved_projects, available_projects = projects, has_access=has_redact_rights_to_project)
+    
+    return render_template("projects.html", user=current_user, available_projects = projects, has_access=has_redact_rights_to_project, available_other_projects = saved_projects)
 
 # Показывает все проекты
 @projects.route('/admin_projects', methods=["GET"])
@@ -37,7 +103,7 @@ def adminProjects():
         return render_template("forbidden.html", user=current_user)
     
     projects = Project.query.all()
-    return render_template("projects.html", user=current_user, available_projects = projects)
+    return render_template("projects_admin.html", user=current_user, available_projects = projects, has_access=has_redact_rights_to_project)
 
 # Показывает все ваши проекты
 @projects.route('/admin_users', methods=["GET", "POST"])
@@ -51,20 +117,20 @@ def adminUsers():
     users = User.query.all()
     
     if request.method == "GET":
-        return render_template("admin_users.html", user=current_user, users = users)
+        return render_template("admin_users.html", user=current_user, users = users, get_date=get_date)
     
     user_id = request.form.get('user_id')
     user = User.query.filter_by(id=int(user_id)).first()
     
     if not user:
-        return render_template("admin_users.html", user=current_user, users = users)
+        return render_template("admin_users.html", user=current_user, users = users, get_date=get_date)
     
     if user.id == current_user.id:
         flash("Невозможно совершать действия над своим аккаунтом", category="error")
-        return render_template("admin_users.html", user=current_user, users = users)
+        return render_template("admin_users.html", user=current_user, users = users, get_date=get_date)
     elif user.id == 1:
         flash("Невозможно совершить действие над аккаунтом главного администратора", category="error")
-        return render_template("admin_users.html", user=current_user, users = users)
+        return render_template("admin_users.html", user=current_user, users = users, get_date=get_date)
     
     if 'role_button' in request.form:
         user.is_admin = ["True", "False"][user.is_admin == "True"]
@@ -75,7 +141,7 @@ def adminUsers():
     # В БУДУЩЕМ УДАЛЯТЬ ПРОЕКТЫ ПОЛЬЗОВАТЕЛЯ №№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№№
     db.session.commit()
     users = User.query.all()
-    return render_template("admin_users.html", user=current_user, users = users)
+    return render_template("admin_users.html", user=current_user, users = users, get_date=get_date)
 
 
 # Управляет функционалом по редакитированию информации о конкретном проекте
@@ -505,7 +571,7 @@ def accessProjectChat(index):
         return render_template("forbidden.html", user=current_user)
     
     if request.method == "GET":
-        return render_template("show_project_chat.html", project=project, user=current_user, chat_room=chat_room)
+        return render_template("show_project_chat.html", project=project, user=current_user, chat_room=chat_room, get_time=get_time)
     
     # POST
     create_message = request.form.get('create_message')
@@ -516,7 +582,7 @@ def accessProjectChat(index):
         db.session.add(message)
         db.session.commit()
         
-    return render_template("show_project_chat.html", project=project, user=current_user, chat_room=chat_room)
+    return render_template("show_project_chat.html", project=project, user=current_user, chat_room=chat_room, get_time=get_time)
 
 # Управляет комментариями к задачам
 @projects.route('/projects/<int:project_id>/<int:subproject_id>/<int:note_id>/comments', methods=["GET", "POST"])

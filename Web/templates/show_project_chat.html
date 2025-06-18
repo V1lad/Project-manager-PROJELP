@@ -1,40 +1,128 @@
 {% extends "base.html" %}
 
-{% block title %}Чат{% endblock %}
+{% block title %}Чат проекта{% endblock %}
 {% block content %}
-<div class="container mb-2">
-<ul class="list-group mt-5  content-container">
-    {% for message in chat_room.messages %}
-        <li class="list-group-item message-bubble {% if message.author_id == current_user.id %}my-message{% else %}other-message{% endif %}">
-        <div class="message-header">
-            <span class="message-author {% if message.author_id == current_user.id %}text-primary{% else %}text-secondary{% endif %}">
-                {{ message.author_name}}
-            </span>
-            <span class="message-time text-muted">
-                {{ message.created_at }}
-            </span>
-        </div>
-        <form method="POST">
-            <div class="form-group message-content">
-                {{ message.text }}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <div class="card bg-dark-2 text-light">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="bi bi-chat-dots fs-1 text-purple me-3"></i>
+                        <h3 class="text-light mb-0">Проектый чат</h3>
+                    </div>
+                    
+                    <!-- Контейнер сообщений   -->
+                    <div class="chat-container mb-4" style="max-height: 60vh; overflow-y: auto;">
+                        {% for message in chat_room.messages %}
+                        <div class="message-bubble mb-3 p-3 rounded-3 {% if message.author_id == current_user.id %}bg-purple my-message{% else %}bg-dark-3 other-message{% endif %}">
+                            <div class="message-header d-flex justify-content-between mb-2">
+                                <span class="message-author fw-bold {% if message.author_id == current_user.id %}text-light{% else %}text-purple{% endif %}">
+                                    {{ message.author_name }}
+                                </span>
+                                <span class="message-time">
+                                    {{ get_time(message.created_at)}}
+                                </span>
+                            </div>
+                            <div class="message-content text-light">
+                                {{ message.text }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Форма отправки сообщения -->
+                    <form action="{{ url_for('.accessProjectChat', index=project.id) }}" method="POST" class="mb-4">
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control bg-dark-2 text-light" 
+                                   name="create_message" 
+                                   placeholder="Введите сообщение..."
+                                   required>
+                            <button type="submit" class="btn btn-purple">
+                                <i class="bi bi-send me-1"></i> Отправить
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Кнопка возврата -->
+                    <form action="{{ url_for('.showProject', index=project.id) }}" method="POST">
+                        <input type="hidden" name="project" value="{{ project.id }}" />
+                        <button type="submit" class="btn btn-outline-purple w-100">
+                             Вернуться к проекту
+                        </button>
+                    </form>
+                </div>
             </div>
-        </form>
-       
-    </li>
-    {% endfor %}
-    <li class="list-group-item message-bubble">
-        <form action = {{ url_for('.accessProjectChat', index=project.id) }} method = "POST">
-        <input type="text" class="form-control mb-3 border-0" name="create_message" placeholder="Введите сообщение" />
-        <button type="submit" class="btn btn-info btn-sm">Отправить сообщение</button>
-        <br/>
-        </form>
-    </li>
-</ul>
-<form action = {{ url_for('.showProject', index=project.id) }} method = "POST">
-<input type="hidden" name="project" value="{{ project.id }}" />
-<button type="submit" class="btn btn-info mt-3">Вернуться к проекту</button>
-<br/>
-</form>
+        </div>
+    </div>
 </div>
+
+<style>
+    .color_back {
+        background: rgba(255,255,255,0.03);
+    }
+
+    .card {
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .bg-dark-2 {
+        background-color: #1a1a2e !important;
+    }
+    .bg-dark-3 {
+        background: rgba(255,255,255,0.03); !important;
+    }
+    .text-purple {
+        color: #9d7fe8 !important;
+    }
+    .bg-purple {
+        background-color: #6f42c1 !important;
+    }
+    .btn-purple {
+        background-color: #6f42c1;
+        border-color: #6f42c1;
+        color: white;
+    }
+    .btn-purple:hover {
+        background-color: #5a32a3;
+        border-color: #5a32a3;
+    }
+    .btn-outline-purple {
+        border-color: #6f42c1;
+        color: #9d7fe8;
+    }
+    .btn-outline-purple:hover {
+        background-color: #6f42c1;
+        color: white;
+    }
+    .form-control {
+        border: 1px solid rgba(111, 66, 193, 0.3);
+        background-color: #16213e !important;
+        color: white !important;
+    }
+    .form-control:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+    }
+    .chat-container {
+        background-color: #16213e;
+        border-radius: 8px;
+        padding: 15px;
+    }
+    .message-bubble {
+        max-width: 80%;
+    }
+    .my-message {
+        margin-left: auto;
+        border-bottom-right-radius: 0 !important;
+    }
+    .other-message {
+        margin-right: auto;
+        border-bottom-left-radius: 0 !important;
+    }
+</style>
 
 {% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Доступные проекты{% endblock %}
+{% block content %}
+
+<div class="container py-5 content-container-extra">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-light"><i class="bi bi-folder2-open me-3"></i>Ваши проекты</h1>
+        <a href="/new_project" class="btn btn-purple">
+            <i class="bi bi-plus-circle me-2"></i> Новый проект
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% for project in available_projects %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card bg-dark-2 text-light {% if project.done == 'True' %}completed-project{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-1 text-purple">
+                                <span>
+                                    {{ project.name }}
+                                </span>
+                            </h4>
+                        </div>
+                        <div class="ms-2">
+                            <span class="badge bg-{% if project.done == "True" %}success{% else %}secondary{% endif %}">
+                                {% if project.done == "True" %}Завершён{% else %}В процессе{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted">{{ project.shortDescription }}</p>
+                    
+                    <div class="progress bg-dark mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-purple" 
+                             role="progressbar" 
+                             style="width: {{ project.progress|default(0) }}%">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ project.progress|default(0) }}% выполнено</small>
+                    
+                    <div class="d-grid mt-3">
+                        <form action="{{ url_for('.showProject', index=project.id) }}" method="POST">
+                            <input type="hidden" name="project" value="{{ project.id }}" />
+                            <button type="submit" class="btn btn-purple w-100">
+                                <i class="bi bi-box-arrow-in-right"></i> Открыть
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<style>
+    .border-purple-1 {
+        border: 1px solid rgba(111, 66, 193, 0.3);
+    }
+    .completed-project {
+        opacity: 0.85;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+    .text-purple {
+        color: #9d7fe8 !important;
+    }
+    .card {
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+</style>
+
+{% endblock %}

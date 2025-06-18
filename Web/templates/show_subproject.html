@@ -2,7 +2,7 @@
 
 {% block title %}Проект{% endblock %}
 {% block content %}
-
+<div class="content-container-extra">
 <ul class="list-group mt-4">
     {% for note in subproject.notes %}
     <li class="list-group-item bg-dark-2 text-light mb-3 border rounded-3 shadow-lg {% if note.status == 'done' %}border-success
@@ -145,6 +145,6 @@
 <button type="submit" class="btn btn-purple mt-3 mb-3"> Вернуться к проекту</button>
 <br/>
 </form>
-
+</div>
 
 {% endblock %}
